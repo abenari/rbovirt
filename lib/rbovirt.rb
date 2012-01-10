@@ -91,7 +91,7 @@ module OVIRT
       }
       headers.merge!(auth_header)
       result_xml = Nokogiri::XML(OVIRT::client(@api_entrypoint)["/"].get(headers))
-      (result_xml/'/api/system_version')
+      (result_xml/'/api/product_info/version')
     end
 
     def api_version?(major)
@@ -108,21 +108,30 @@ module OVIRT
       (result_xml/'/cluster/version').first[:major].strip == major
     end
 
-    def create_vm(template_id, opts={})
-      opts ||= {}
-      raise OvirtException::new("Requested VM not found in datacenter #{self.current_datacenter.id}") unless template(template_id)
+    def create_vm(template_name, opts={})
       builder = Nokogiri::XML::Builder.new do
         vm {
           name opts[:name] || "i-#{Time.now.to_i}"
-          template_(:id => template_id)
-          cluster_(:id => opts[:realm_id].empty? ? clusters.first.id : opts[:realm_id])
-          type_ opts[:hwp_id] || 'desktop'
+          template_{
+            name_(template_name)
+          }
+          cluster_{
+            name_(opts[:cluster_name].nil? ? clusters.first.name : opts[:cluster_name])
+          }
+          type_ opts[:hwp_id] || 'Server'
           memory opts[:hwp_memory] ? (opts[:hwp_memory].to_i*1024*1024).to_s : (512*1024*1024).to_s
           cpu {
             topology( :cores => (opts[:hwp_cpu] || '1'), :sockets => '1' )
           }
+          os{
+            boot(:dev=>'network')
+            boot(:dev=>'hd')
+          }
+          display_{
+            type_('vnc')
+          }
           if opts[:user_data] and not opts[:user_data].empty?
-            if api_version?('3') and cluster_version?((opts[:realm_id] || clusters.first.id), '3')
+            if api_version?('3') and cluster_version?((opts[:cluster_id] || clusters.first.id), '3')
               custom_properties {
                 custom_property({
                   :name => "floppyinject",
@@ -140,11 +149,10 @@ module OVIRT
         :content_type => 'application/xml',
         :accept => 'application/xml',
       })
-      templates = templates(:id => template_id)
-      raise OvirtException::new("Requested VM not found in datacenter #{self.current_datacenter.id}") if templates.empty?
       headers.merge!(auth_header)
+      vm_definition = Nokogiri::XML(builder.to_xml).root.to_s
       begin
-        vm = OVIRT::client(@api_entrypoint)["/vms"].post(Nokogiri::XML(builder.to_xml).root.to_s, headers)
+        vm = OVIRT::client(@api_entrypoint)["/vms"].post(vm_definition, headers)
       rescue
         if $!.respond_to?(:http_body)
           fault = (Nokogiri::XML($!.http_body)/'/fault/detail').first
@@ -156,8 +164,68 @@ module OVIRT
       OVIRT::VM::new(self, Nokogiri::XML(vm).root)
     end
 
+    def add_disk(vm_id, opts={})
+      builder = Nokogiri::XML::Builder.new do
+        disk {
+          storage_domains{
+            storage_domain(:id => self.storagedomains.first.id)
+          }
+          size(8589934592)
+          type_('system')
+          bootable('true')
+          interface('virtio')
+          format_('cow')
+          sparse('true')
+        }
+      end
+      headers = opts[:headers] || {}
+      headers.merge!({
+        :content_type => 'application/xml',
+        :accept => 'application/xml',
+      })
+      headers.merge!(auth_header)
+      begin
+        OVIRT::client(@api_entrypoint)["/vms/%s/disks" % vm_id].post(Nokogiri::XML(builder.to_xml).root.to_s, headers)
+      rescue
+        if $!.respond_to?(:http_body)
+          fault = (Nokogiri::XML($!.http_body)/'/fault/detail').first
+          fault = fault.text.gsub(/\[|\]/, '') if fault
+        end
+        fault ||= $!.message
+        raise OvirtException::new(fault)
+      end
+
+    end
+
+    
+    def add_nic(vm_id, opts={})
+      builder = Nokogiri::XML::Builder.new do
+        nic{
+          name('eth0')
+          network{
+            name('ovirtmgmt')
+          }
+        }
+      end
+      headers = opts[:headers] || {}
+      headers.merge!({
+        :content_type => 'application/xml',
+        :accept => 'application/xml',
+      })
+      headers.merge!(auth_header)
+      begin
+        OVIRT::client(@api_entrypoint)["/vms/%s/nics" % vm_id].post(Nokogiri::XML(builder.to_xml).root.to_s, headers)
+      rescue
+        if $!.respond_to?(:http_body)
+          fault = (Nokogiri::XML($!.http_body)/'/fault/detail').first
+          fault = fault.text.gsub(/\[|\]/, '') if fault
+        end
+        fault ||= $!.message
+        raise OvirtException::new(fault)
+      end
+    end
+
     def create_template(vm_id, opts={})
-      opts ||= {}
       builder = Nokogiri::XML::Builder.new do
         template_ {
           name opts[:name]
@@ -289,6 +357,7 @@ module OVIRT
       value=!(vm/'data_center').empty?
       value
     end
+
   end
 
   class Link

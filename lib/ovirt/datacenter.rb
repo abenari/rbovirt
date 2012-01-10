@@ -15,11 +15,11 @@ module OVIRT
       }
       headers.merge!(client.auth_header)
       clusters_list = OVIRT::client(client.api_entrypoint)["/clusters"].get(headers)
-      cluster_arr = Client::parse_response(clusters_list).xpath('/clusters/cluster')
+      cluster_arr = Client::parse_response(clusters_list).xpath('/clusters/cluster').map
       clusters_arr = []
       cluster_arr.each do |cluster|
         cluster = OVIRT::Cluster.new(self.client, cluster)
-        clusters_arr << cluster if cluster.datacenter && cluster.datacenter.id == client.datacenter_id
+        clusters_arr << cluster if cluster.datacenter && cluster.datacenter.id == client.current_datacenter.id
       end
       clusters_arr
     end

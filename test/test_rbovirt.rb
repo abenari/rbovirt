@@ -8,8 +8,8 @@ class TestRbovirt < Test::Unit::TestCase
     hostname = "ovirt.sat.lab.tlv.redhat.com"
     port = "8080"
     url = "http://#{hostname}:#{port}/api"
-    datacenter = "default"
-    @client = ::OVIRT::Client.new(user, password, url, datacenter)
+    @blank_template_id = "00000000-0000-0000-0000-000000000000"
+    @client = ::OVIRT::Client.new(user, password, url)
   end
 
   def test_should_return_a_version
@@ -28,54 +28,84 @@ class TestRbovirt < Test::Unit::TestCase
     assert @client.templates
   end
 
-  def test_should_return_a_template
-    id = "123123"
-    assert @client.template(id)
-  end
-
   def test_should_create_template
-    id = "123123"
-    template_name = "test_123"
-    assert @client.create_template(id, :name => template_name, :description => "test_template")
+    name = 't'+Time.now.to_i.to_s
+    params = {}
+    params[:name] = name
+    params[:cluster_name] = "test"
+    vm = @client.create_vm("Blank",params)
+    @client.add_disk(vm.id)
+    @client.add_nic(vm.id)
+    while @client.vms(:id => vm.id).first.status !~ /down/i do
+    end
+    template_name = "test_template"
+    assert template = @client.create_template(vm.id, :name => template_name, :description => "test_template")
+    while @client.vms(:id => vm.id).first.status !~ /down/i do
+    end
+    assert @client.destroy_template(template.id)
+    @client.vm_action(vm.id, :delete)
   end
 
-  def test_should_destroy_template
-    id = "123123"
-    assert @client.destroy_template(id)
+  def test_should_return_a_template
+    assert @client.template(@blank_template_id)
   end
+
 
   def test_should_return_vms
     assert @client.vms
   end
 
-   def test_should_return_a_vm
-     id = "123123"
-     assert @client.vms(:id => id)
-   end
+  def test_should_return_a_vm
+    name = 'a'+Time.now.to_i.to_s
+    params = {}
+    params[:name] = name
+    params[:cluster_name] = "test"
+    vm = @client.create_vm("Blank",params)
+    assert @client.vms(:id => vm.id)
+    @client.vm_action(vm.id, :delete)
+  end
 
   def test_should_start_vm
-    id = "123123"
-    assert @client.vm_action(id, :start)
+    name = 'r'+Time.now.to_i.to_s
+    params = {}
+    params[:name] = name
+    params[:cluster_name] = "test"
+    vm = @client.create_vm("Blank",params)
+    @client.add_disk(vm.id)
+    @client.add_nic(vm.id)
+    while @client.vms(:id => vm.id).first.status !~ /down/i do
+    end  
+    assert @client.vm_action(vm.id, :start)
+    @client.vm_action(vm.id, :shutdown)
+    while @client.vms(:id => vm.id).first.status !~ /down/i do
+    end
+    @client.vm_action(vm.id, :delete)
   end
 
   def test_should_stop_vm
-    assert @client.vm_action(id, :shutdown)
+
   end
 
-  def test_should_destroy_vm(credentials, id)
-    assert @client.vm_action(id, :delete)
+  def test_should_destroy_vm
+    name = 'd'+Time.now.to_i.to_s
+    params = {}
+    params[:name] = name
+    params[:cluster_name] = "test"
+    vm = @client.create_vm("Blank",params)
+    assert @client.vm_action(vm.id, :delete)
   end
 
-  def test_should_return_storage_domains
+  def test_should_return_storage
     assert @client.storagedomains
   end
 
-  def test_should_create_vm
-    template_id = "123123"
+  def test_should_create_a_vm
     name = Time.now.to_i.to_s
     params = {}
     params[:name] = name
-    assert @client.create_vm(template_id, params)
+    params[:cluster_name] = "test"
+    assert vm = @client.create_vm("Blank",params)
+    @client.vm_action(vm.id, :delete)
   end
 
 end
