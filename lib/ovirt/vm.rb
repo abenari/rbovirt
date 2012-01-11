@@ -11,6 +11,78 @@ module OVIRT
       self
     end
 
+    # NOTE: Injected file will be available in floppy drive inside
+    #       the instance. (Be sure you 'modprobe floppy' on Linux)
+    FILEINJECT_PATH = "user-data.txt"
+
+    def self.to_xml(template_name, cluster_name, opts={})
+      builder = Nokogiri::XML::Builder.new do
+        vm{
+          name_ opts[:name] || "i-#{Time.now.to_i}"
+          template_{
+            name_(template_name)
+          }
+          cluster_{
+            name_(cluster_name)
+          }
+          type_ opts[:hwp_id] || 'Server'
+          memory opts[:hwp_memory] ? (opts[:hwp_memory].to_i*1024*1024).to_s : (512*1024*1024).to_s
+          cpu {
+            topology( :cores => (opts[:hwp_cpu] || '1'), :sockets => '1' )
+          }
+          os{
+            boot(:dev=>'network')
+            boot(:dev=>'hd')
+          }
+          display_{
+            type_('vnc')
+          }
+          if opts[:user_data] and not opts[:user_data].empty?
+            if api_version?('3') and cluster_version?((opts[:cluster_id] || clusters.first.id), '3')
+              custom_properties {
+                custom_property({
+                  :name => "floppyinject",
+                  :value => "#{OVIRT::FILEINJECT_PATH}:#{opts[:user_data]}",
+                  :regexp => "^([^:]+):(.*)$"})
+              }
+            else
+              raise OvirtVersionUnsupportedException.new
+            end
+          end
+        }
+      end
+
+      Nokogiri::XML(builder.to_xml).root.to_s
+    end
+
+    def self.disk_xml(storage_domain_id,opts={})
+       builder = Nokogiri::XML::Builder.new do
+        disk_{
+          storage_domains_{
+            storage_domain_(:id => storage_domain_id)
+          }
+          size_(opts[:size] || 8589934592)
+          type_(opts[:type] || 'system')
+          bootable_(opts[:bootable] || 'true')
+          interface_(opts[:interface] || 'virtio')
+          format_(opts[:format] || 'cow')
+          sparse_(opts[:sparse] || 'true')
+        }
+      end
+      Nokogiri::XML(builder.to_xml).root.to_s
+    end
+
+    def self.nic_xml(opts={})
+      builder = Nokogiri::XML::Builder.new do
+        nic{
+          name_(opts[:name] || 'eth0')
+          network{
+            name_(opts[:network] || 'ovirtmgmt')
+          }
+        }
+      end
+      Nokogiri::XML(builder.to_xml).root.to_s
+    end
     private
 
     def parse_xml_attributes!(xml)

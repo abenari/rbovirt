@@ -34,16 +34,17 @@ class TestRbovirt < Test::Unit::TestCase
     params[:name] = name
     params[:cluster_name] = "test"
     vm = @client.create_vm("Blank",params)
+
     @client.add_disk(vm.id)
     @client.add_nic(vm.id)
-    while @client.vms(:id => vm.id).first.status !~ /down/i do
+    while @client.vm(vm.id).status !~ /down/i do
     end
     template_name = "test_template"
     assert template = @client.create_template(vm.id, :name => template_name, :description => "test_template")
-    while @client.vms(:id => vm.id).first.status !~ /down/i do
+    while @client.vm(vm.id).status !~ /down/i do
     end
     assert @client.destroy_template(template.id)
-    @client.vm_action(vm.id, :delete)
+    @client.destroy_vm(vm.id)
   end
 
   def test_should_return_a_template
@@ -61,8 +62,8 @@ class TestRbovirt < Test::Unit::TestCase
     params[:name] = name
     params[:cluster_name] = "test"
     vm = @client.create_vm("Blank",params)
-    assert @client.vms(:id => vm.id)
-    @client.vm_action(vm.id, :delete)
+    assert @client.vm(vm.id)
+    @client.destroy_vm(vm.id)
   end
 
   def test_should_start_vm
@@ -73,13 +74,13 @@ class TestRbovirt < Test::Unit::TestCase
     vm = @client.create_vm("Blank",params)
     @client.add_disk(vm.id)
     @client.add_nic(vm.id)
-    while @client.vms(:id => vm.id).first.status !~ /down/i do
+    while @client.vm(vm.id).status !~ /down/i do
     end  
     assert @client.vm_action(vm.id, :start)
     @client.vm_action(vm.id, :shutdown)
-    while @client.vms(:id => vm.id).first.status !~ /down/i do
+    while @client.vm(vm.id).status !~ /down/i do
     end
-    @client.vm_action(vm.id, :delete)
+    @client.destroy_vm(vm.id)
   end
 
   def test_should_stop_vm
@@ -92,7 +93,7 @@ class TestRbovirt < Test::Unit::TestCase
     params[:name] = name
     params[:cluster_name] = "test"
     vm = @client.create_vm("Blank",params)
-    assert @client.vm_action(vm.id, :delete)
+    assert @client.destroy_vm(vm.id)
   end
 
   def test_should_return_storage
@@ -100,12 +101,12 @@ class TestRbovirt < Test::Unit::TestCase
   end
 
   def test_should_create_a_vm
-    name = Time.now.to_i.to_s
+    name = 'c'+Time.now.to_i.to_s
     params = {}
     params[:name] = name
     params[:cluster_name] = "test"
     assert vm = @client.create_vm("Blank",params)
-    @client.vm_action(vm.id, :delete)
+    @client.destroy_vm(vm.id)
   end
 
 end

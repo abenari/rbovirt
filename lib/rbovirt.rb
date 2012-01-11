@@ -11,14 +11,6 @@ require "rest_client"
 
 module OVIRT
 
-  # NOTE: Injected file will be available in floppy drive inside
-  #       the instance. (Be sure you 'modprobe floppy' on Linux)
-  FILEINJECT_PATH = "user-data.txt"
-
-  def self.client(url)
-    RestClient::Resource.new(url)
-  end
-
   class OvirtVersionUnsupportedException < StandardError; end
   class OvirtException < StandardError
     def initialize(message)
@@ -41,56 +33,30 @@ module OVIRT
       @api_entrypoint = api_entrypoint
     end
 
+    def vm(vm_id)
+      headers = {:accept => "application/xml; detail=disks; detail=nics; detail=hosts"}
+      vm = http_get("/vms/%s" % vm_id, headers).root
+      OVIRT::VM::new(self, vm)
+    end
+
     def vms(opts={})
-      headers = {
-        :accept => "application/xml; detail=disks; detail=nics; detail=hosts"
-      }
-      headers.merge!(auth_header)
-      if opts[:id]
-        vm = Client::parse_response(OVIRT::client(@api_entrypoint)["/vms/%s" % opts[:id]].get(headers)).root
-        return [] unless current_datacenter.cluster_ids.include?((vm/'cluster').first[:id])
-        [ OVIRT::VM::new(self, vm)]
-      else
-        Client::parse_response(OVIRT::client(@api_entrypoint)["/vms"].get(headers)).xpath('/vms/vm').collect do |vm|
-          next unless current_datacenter.cluster_ids.include?((vm/'cluster').first[:id])
-          OVIRT::VM::new(self, vm)
-        end.compact
+      headers = {:accept => "application/xml; detail=disks; detail=nics; detail=hosts"}
+      http_get("/vms",headers).xpath('/vms/vm').collect do |vm|
+        OVIRT::VM::new(self, vm)
       end
     end
 
-    def vm_action(id, action, headers={})
-      headers.merge!(auth_header)
-      headers.merge!({:accept => 'application/xml'})
-      vm = vms(:id => id)
-      raise OvirtException::new("Requested VM not found in datacenter #{self.current_datacenter.id}") if vm.empty?
-      if action==:delete
-        OVIRT::client(@api_entrypoint)["/vms/%s" % id].delete(headers)
-      else
-        headers.merge!({ :content_type => 'application/xml' })
-        begin
-          client_response = OVIRT::client(@api_entrypoint)["/vms/%s/%s" % [id, action]].post('<action/>', headers)
-        rescue
-          if $!.is_a?(RestClient::BadRequest)
-            fault = (Nokogiri::XML($!.http_body)/'//fault/detail')
-            fault = fault.text.gsub(/\[|\]/, '') if fault
-          end
-          fault ||= $!.message
-          raise OvirtException::new(fault)
-        end
-        xml_response = Client::parse_response(client_response)
+    def vm_action(id, action, opts={})
+      xml_response = http_post("/vms/%s/%s" % [id, action],'<action/>', opts)
+      return (xml_response/'action/status').first.text.strip.upcase=="COMPLETE"
+    end
 
-        return false if (xml_response/'action/status').first.text.strip.upcase!="COMPLETE"
-      end
-      return true
+    def destroy_vm(id)
+      http_delete("/vms/%s" % id)
     end
 
     def api_version
-      headers = {
-        :content_type => 'application/xml',
-        :accept => 'application/xml'
-      }
-      headers.merge!(auth_header)
-      result_xml = Nokogiri::XML(OVIRT::client(@api_entrypoint)["/"].get(headers))
+      result_xml = http_get("/")
       (result_xml/'/api/product_info/version')
     end
 
@@ -99,200 +65,65 @@ module OVIRT
     end
 
     def cluster_version?(cluster_id, major)
-      headers = {
-        :content_type => 'application/xml',
-        :accept => 'application/xml'
-      }
-      headers.merge!(auth_header)
-      result_xml = Nokogiri::XML(OVIRT::client(@api_entrypoint)["/clusters/%s" % cluster_id].get(headers))
+      result_xml = http_get("/clusters/%s" % cluster_id)
       (result_xml/'/cluster/version').first[:major].strip == major
     end
 
-    def create_vm(template_name, opts={})
-      builder = Nokogiri::XML::Builder.new do
-        vm {
-          name opts[:name] || "i-#{Time.now.to_i}"
-          template_{
-            name_(template_name)
-          }
-          cluster_{
-            name_(opts[:cluster_name].nil? ? clusters.first.name : opts[:cluster_name])
-          }
-          type_ opts[:hwp_id] || 'Server'
-          memory opts[:hwp_memory] ? (opts[:hwp_memory].to_i*1024*1024).to_s : (512*1024*1024).to_s
-          cpu {
-            topology( :cores => (opts[:hwp_cpu] || '1'), :sockets => '1' )
-          }
-          os{
-            boot(:dev=>'network')
-            boot(:dev=>'hd')
-          }
-          display_{
-            type_('vnc')
-          }
-          if opts[:user_data] and not opts[:user_data].empty?
-            if api_version?('3') and cluster_version?((opts[:cluster_id] || clusters.first.id), '3')
-              custom_properties {
-                custom_property({
-                  :name => "floppyinject",
-                  :value => "#{OVIRT::FILEINJECT_PATH}:#{opts[:user_data]}",
-                  :regexp => "^([^:]+):(.*)$"})
-              }
-            else
-              raise OvirtVersionUnsupportedException.new
-            end
-          end
-        }
-      end
-      headers = opts[:headers] || {}
-      headers.merge!({
-        :content_type => 'application/xml',
-        :accept => 'application/xml',
-      })
-      headers.merge!(auth_header)
-      vm_definition = Nokogiri::XML(builder.to_xml).root.to_s
-      begin
-        vm = OVIRT::client(@api_entrypoint)["/vms"].post(vm_definition, headers)
-      rescue
-        if $!.respond_to?(:http_body)
-          fault = (Nokogiri::XML($!.http_body)/'/fault/detail').first
-          fault = fault.text.gsub(/\[|\]/, '') if fault
-        end
-        fault ||= $!.message
-        raise OvirtException::new(fault)
-      end
-      OVIRT::VM::new(self, Nokogiri::XML(vm).root)
+    def create_vm(template_name, opts)
+      cluster_name = opts[:cluster_name] || clusters.first.name
+      result_xml = http_post("/vms",OVIRT::VM.to_xml(template_name, cluster_name, opts))
+      OVIRT::VM::new(self, result_xml.root)
     end
 
     def add_disk(vm_id, opts={})
-      builder = Nokogiri::XML::Builder.new do
-        disk {
-          storage_domains{
-            storage_domain(:id => self.storagedomains.first.id)
-          }
-          size(8589934592)
-          type_('system')
-          bootable('true')
-          interface('virtio')
-          format_('cow')
-          sparse('true')
-        }
-      end
-      headers = opts[:headers] || {}
-      headers.merge!({
-        :content_type => 'application/xml',
-        :accept => 'application/xml',
-      })
-      headers.merge!(auth_header)
-      begin
-        OVIRT::client(@api_entrypoint)["/vms/%s/disks" % vm_id].post(Nokogiri::XML(builder.to_xml).root.to_s, headers)
-      rescue
-        if $!.respond_to?(:http_body)
-          fault = (Nokogiri::XML($!.http_body)/'/fault/detail').first
-          fault = fault.text.gsub(/\[|\]/, '') if fault
-        end
-        fault ||= $!.message
-        raise OvirtException::new(fault)
-      end
-
+      storage_domain_id = opts[:storage_domain] || storagedomains.first.id
+      result_xml = http_post("/vms/%s/disks" % vm_id, VM.disk_xml(storage_domain_id, opts))
     end
 
-    
+
     def add_nic(vm_id, opts={})
-      builder = Nokogiri::XML::Builder.new do
-        nic{
-          name('eth0')
-          network{
-            name('ovirtmgmt')
-          }
-        }
-      end
-      headers = opts[:headers] || {}
-      headers.merge!({
-        :content_type => 'application/xml',
-        :accept => 'application/xml',
-      })
-      headers.merge!(auth_header)
-      begin
-        OVIRT::client(@api_entrypoint)["/vms/%s/nics" % vm_id].post(Nokogiri::XML(builder.to_xml).root.to_s, headers)
-      rescue
-        if $!.respond_to?(:http_body)
-          fault = (Nokogiri::XML($!.http_body)/'/fault/detail').first
-          fault = fault.text.gsub(/\[|\]/, '') if fault
-        end
-        fault ||= $!.message
-        raise OvirtException::new(fault)
-      end
+      http_post("/vms/%s/nics" % vm_id, VM.nic_xml( opts))
     end
 
-    def create_template(vm_id, opts={})
-      builder = Nokogiri::XML::Builder.new do
-        template_ {
-          name opts[:name]
-          description opts[:description]
-          vm(:id => vm_id)
-        }
-      end
-      headers = opts[:headers] || {}
-      headers.merge!({
-        :content_type => 'application/xml',
-        :accept => 'application/xml',
-      })
-      headers.merge!(auth_header)
-      template = OVIRT::client(@api_entrypoint)["/templates"].post(Nokogiri::XML(builder.to_xml).root.to_s, headers)
-      OVIRT::Template::new(self, Nokogiri::XML(template).root)
+    def create_template(vm_id, opts)
+      template = http_post("/templates", Template.to_xml(vm_id, opts))
+      OVIRT::Template::new(self, template.root)
     end
 
-    def destroy_template(id, headers={})
-      headers.merge!({
-        :content_type => 'application/xml',
-        :accept => 'application/xml',
-      })
-      tmpl = template(id)
-      raise OvirtException::new("Requested VM not found in datacenter #{self.current_datacenter.id}") unless tmpl
-      headers.merge!(auth_header)
-      OVIRT::client(@api_entrypoint)["/templates/%s" % id].delete(headers)
-      return true
+    def destroy_template(id)
+      http_delete("/templates/%s" % id)
     end
 
     def templates(opts={})
-      headers = {
-        :accept => "application/xml"
-      }
-      headers.merge!(auth_header)
-      templates = OVIRT::client(@api_entrypoint)["/templates"].get(headers)
-      Client::parse_response(  templates).xpath('/templates/template').collect do |t|
-        next unless current_datacenter.cluster_ids.include?((t/'cluster').first[:id])
+      templates = http_get("/templates")
+      templates.xpath('/templates/template').collect do |t|
         OVIRT::Template::new(self, t)
       end.compact
     end
 
     def template(template_id)
-      headers = {
-        :accept => "application/xml"
-      }
-      headers.merge!(auth_header)
-      template = OVIRT::client(@api_entrypoint)["/templates/%s" % template_id].get(headers)
-      OVIRT::Template::new(self, Client::parse_response(template).root)
+      template = http_get("/templates/%s" % template_id)
+      OVIRT::Template::new(self, template.root)
     end
 
     def datacenters(opts={})
-      headers = {
-        :accept => "application/xml"
-      }
-      headers.merge!(auth_header)
-      datacenters = OVIRT::client(@api_entrypoint)["/datacenters"].get(headers)
-      Client::parse_response(datacenters).xpath('/data_centers/data_center').collect do |dc|
+      datacenters = http_get("/datacenters")
+      datacenters.xpath('/data_centers/data_center').collect do |dc|
         OVIRT::DataCenter::new(self, dc)
       end
     end
 
     def clusters
-      current_datacenter.clusters
+      headers = {:accept => "application/xml; detail=datacenters"}
+      http_get("/clusters", headers).xpath('/clusters/cluster').collect do |cl|
+        OVIRT::Cluster.new(self, cl)
+      end
     end
 
     def cluster(cluster_id)
-      current_datacenter.cluster(cluster_id)
+      headers = {:accept => "application/xml; detail=datacenters"}
+      cluster_xml = http_get("/clusters/%s" % cluster_id, headers)
+      OVIRT::Cluster.new(self, cluster_xml)
     end
 
     def current_datacenter
@@ -300,46 +131,65 @@ module OVIRT
     end
 
     def datacenter(datacenter_id)
-      headers = {
-        :accept => "application/xml"
-      }
-      headers.merge!(auth_header)
-      datacenter = OVIRT::client(@api_entrypoint)["/datacenters/%s" % datacenter_id].get(headers)
-      OVIRT::DataCenter::new(self, Client::parse_response(datacenter).root)
-    end
-
-    def hosts(opts={})
-      headers = {
-        :accept => "application/xml"
-      }
-      headers.merge!(auth_header)
-      if opts[:id]
-        vm = Client::parse_response(OVIRT::client(@api_entrypoint)["/hosts/%s" % opts[:id]].get(headers)).root
-        [ OVIRT::Host::new(self, vm)]
-      else
-        Client::parse_response(OVIRT::client(@api_entrypoint)["/hosts"].get(headers)).xpath('/hosts/host').collect do |vm|
-          OVIRT::Host::new(self, vm)
-        end
+      begin
+        datacenter = http_get("/datacenters/%s" % datacenter_id)
+        OVIRT::DataCenter::new(self, datacenter.root)
+      rescue
+        handle_fault $!
       end
     end
 
+    def host(host_id, opts={})
+      xml_response = http_get("/hosts/%s" % host_id)
+      OVIRT::Host::new(self, xml_response.root)
+    end
+    
+    def hosts(opts={})
+      http_get("/hosts").xpath('/hosts/host').collect do |h|
+        OVIRT::Host::new(self, h)
+      end
+    end
+
+    def storagedomain(sd_id, opts={})
+      sd = http_get("/storagedomains/%s" % sd_id)
+      OVIRT::StorageDomain::new(self, sd.root)
+    end
+    
     def storagedomains(opts={})
-      headers = {
-        :accept => "application/xml"
-      }
-      headers.merge!(auth_header)
-      if opts[:id]
-        vm = Client::parse_response(OVIRT::client(@api_entrypoint)["/storagedomains/%s" % opts[:id]].get(headers)).root
-        [ OVIRT::StorageDomain::new(self, vm)]
-      else
-        Client::parse_response(OVIRT::client(@api_entrypoint)["/storagedomains"].get(headers)).xpath('/storage_domains/storage_domain').collect do |vm|
-          OVIRT::StorageDomain::new(self, vm)
-        end
+      http_get("/storagedomains").xpath('/storage_domains/storage_domain').collect do |sd|
+        OVIRT::StorageDomain::new(self, sd)
+      end
+    end
+
+    private
+
+    def http_get(suburl, headers={})
+      begin
+        Nokogiri::XML(RestClient::Resource.new(@api_entrypoint)[suburl].get(http_headers(headers)))
+      rescue
+        handle_fault $!
+      end
+    end
+
+    def http_post(suburl, body, headers={})
+      begin
+        Nokogiri::XML(RestClient::Resource.new(@api_entrypoint)[suburl].post(body, http_headers(headers)))
+      rescue
+        handle_fault $!
+      end
+    end
+
+    def http_delete(suburl)
+      begin
+        headers = {:accept => 'application/xml'}.merge(auth_header)
+        Nokogiri::XML(RestClient::Resource.new(@api_entrypoint)[suburl].delete(headers))
+      rescue
+        handle_fault $!
       end
     end
 
     def auth_header
-      # As RDOC says this is the function for strict_encode64:
+      # This is the method for strict_encode64:
       encoded_credentials = ["#{@credentials[:username]}:#{@credentials[:password]}"].pack("m0").gsub(/\n/,'')
       { :authorization => "Basic " + encoded_credentials }
     end
@@ -358,6 +208,21 @@ module OVIRT
       value
     end
 
+    def http_headers(headers ={})
+      headers.merge({
+        :content_type => 'application/xml',
+        :accept => 'application/xml'
+      }).merge(auth_header)
+    end
+
+    def handle_fault(f)
+      if f.is_a?(RestClient::BadRequest)
+        fault = (Nokogiri::XML(f.http_body)/'//fault/detail')
+        fault = fault.text.gsub(/\[|\]/, '') if fault
+      end
+      fault ||= f.message
+      raise OvirtException::new(fault)
+    end
   end
 
   class Link
@@ -375,9 +240,5 @@ module OVIRT
     end
 
   end
-
-
-
-
 
 end
