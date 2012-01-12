@@ -41,7 +41,8 @@ module OVIRT
 
     def vms(opts={})
       headers = {:accept => "application/xml; detail=disks; detail=nics; detail=hosts"}
-      http_get("/vms",headers).xpath('/vms/vm').collect do |vm|
+      search= opts[:search] || ("datacenter=$s" % current_datacenter.name)
+      http_get("/vms?search=%s" % search, headers).xpath('/vms/vm').collect do |vm|
         OVIRT::VM::new(self, vm)
       end
     end
@@ -95,8 +96,8 @@ module OVIRT
     end
 
     def templates(opts={})
-      templates = http_get("/templates")
-      templates.xpath('/templates/template').collect do |t|
+      search= opts[:search] || ("datacenter=$s" % current_datacenter.name)
+      http_get("/templates?serach=%s" % search).xpath('/templates/template').collect do |t|
         OVIRT::Template::new(self, t)
       end.compact
     end
@@ -113,9 +114,10 @@ module OVIRT
       end
     end
 
-    def clusters
+    def clusters(opts={})
       headers = {:accept => "application/xml; detail=datacenters"}
-      http_get("/clusters", headers).xpath('/clusters/cluster').collect do |cl|
+      search= opts[:search] || ("datacenter=$s" % current_datacenter.name)
+      http_get("/clusters?serach=%s" % search, headers).xpath('/clusters/cluster').collect do |cl|
         OVIRT::Cluster.new(self, cl)
       end
     end
@@ -145,18 +147,20 @@ module OVIRT
     end
     
     def hosts(opts={})
-      http_get("/hosts").xpath('/hosts/host').collect do |h|
+      search= opts[:search] || ("datacenter=$s" % current_datacenter.name)
+      http_get("/hosts?search=%s" % search).xpath('/hosts/host').collect do |h|
         OVIRT::Host::new(self, h)
       end
     end
 
-    def storagedomain(sd_id, opts={})
+    def storagedomain(sd_id)
       sd = http_get("/storagedomains/%s" % sd_id)
       OVIRT::StorageDomain::new(self, sd.root)
     end
     
     def storagedomains(opts={})
-      http_get("/storagedomains").xpath('/storage_domains/storage_domain').collect do |sd|
+      search= opts[:search] ||''
+      http_get("/storagedomains?search=%s" % search).xpath('/storage_domains/storage_domain').collect do |sd|
         OVIRT::StorageDomain::new(self, sd)
       end
     end

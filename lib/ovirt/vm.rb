@@ -1,4 +1,8 @@
 module OVIRT
+    # NOTE: Injected file will be available in floppy drive inside
+    #       the instance. (Be sure you 'modprobe floppy' on Linux)
+    FILEINJECT_PATH = "user-data.txt"
+
   class VM < BaseObject
     attr_reader :description, :status, :memory, :profile, :display, :host, :cluster, :template, :macs
     attr_reader :storage, :cores, :username, :creation_time
@@ -10,10 +14,6 @@ module OVIRT
       parse_xml_attributes!(xml)
       self
     end
-
-    # NOTE: Injected file will be available in floppy drive inside
-    #       the instance. (Be sure you 'modprobe floppy' on Linux)
-    FILEINJECT_PATH = "user-data.txt"
 
     def self.to_xml(template_name, cluster_name, opts={})
       builder = Nokogiri::XML::Builder.new do
@@ -37,21 +37,16 @@ module OVIRT
           display_{
             type_('vnc')
           }
-          if opts[:user_data] and not opts[:user_data].empty?
-            if api_version?('3') and cluster_version?((opts[:cluster_id] || clusters.first.id), '3')
-              custom_properties {
-                custom_property({
-                  :name => "floppyinject",
-                  :value => "#{OVIRT::FILEINJECT_PATH}:#{opts[:user_data]}",
-                  :regexp => "^([^:]+):(.*)$"})
-              }
-            else
-              raise OvirtVersionUnsupportedException.new
-            end
+          if(opts[:user_data] && !opts[:user_data].empty?)
+            custom_properties {
+              custom_property({
+                :name => "floppyinject",
+                :value => "#{OVIRT::FILEINJECT_PATH}:#{opts[:user_data]}",
+                :regexp => "^([^:]+):(.*)$"})
+            }
           end
         }
       end
-
       Nokogiri::XML(builder.to_xml).root.to_s
     end
 
