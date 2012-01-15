@@ -1,6 +1,6 @@
 = rbovirt
 
-A Rubi client for ovirt.
+A Ruby client for oVirt.
 
 == Contributing to rbovirt
  

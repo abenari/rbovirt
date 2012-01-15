@@ -17,8 +17,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "rbovirt"
   gem.homepage = "http://github.com/abenari/rbovirt"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{A Ruby client for oVirt REST API}
+  gem.description = %Q{A Ruby client for oVirt REST API}
   gem.email = "abenari@redhat.com"
   gem.authors = ["Amos Benari"]
   # dependencies defined in Gemfile
