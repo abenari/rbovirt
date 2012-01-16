@@ -97,7 +97,7 @@ module OVIRT
 
     def templates(opts={})
       search= opts[:search] || ("datacenter=$s" % current_datacenter.name)
-      http_get("/templates?serach=%s" % search).xpath('/templates/template').collect do |t|
+      http_get("/templates?search=%s" % CGI.escape(search)).xpath('/templates/template').collect do |t|
         OVIRT::Template::new(self, t)
       end.compact
     end
@@ -108,7 +108,8 @@ module OVIRT
     end
 
     def datacenters(opts={})
-      datacenters = http_get("/datacenters")
+      search = opts[:search] ||""
+      datacenters = http_get("/datacenters?search=%s" % CGI.escape(search))
       datacenters.xpath('/data_centers/data_center').collect do |dc|
         OVIRT::DataCenter::new(self, dc)
       end
@@ -117,7 +118,7 @@ module OVIRT
     def clusters(opts={})
       headers = {:accept => "application/xml; detail=datacenters"}
       search= opts[:search] || ("datacenter=$s" % current_datacenter.name)
-      http_get("/clusters?serach=%s" % search, headers).xpath('/clusters/cluster').collect do |cl|
+      http_get("/clusters?search=%s" % CGI.escape(search), headers).xpath('/clusters/cluster').collect do |cl|
         OVIRT::Cluster.new(self, cl)
       end
     end
@@ -148,7 +149,7 @@ module OVIRT
     
     def hosts(opts={})
       search= opts[:search] || ("datacenter=$s" % current_datacenter.name)
-      http_get("/hosts?search=%s" % search).xpath('/hosts/host').collect do |h|
+      http_get("/hosts?search=%s" % CGI.escape(search)).xpath('/hosts/host').collect do |h|
         OVIRT::Host::new(self, h)
       end
     end
@@ -160,7 +161,7 @@ module OVIRT
     
     def storagedomains(opts={})
       search= opts[:search] ||''
-      http_get("/storagedomains?search=%s" % search).xpath('/storage_domains/storage_domain').collect do |sd|
+      http_get("/storagedomains?search=%s" % CGI.escape(search)).xpath('/storage_domains/storage_domain').collect do |sd|
         OVIRT::StorageDomain::new(self, sd)
       end
     end
