@@ -8,5 +8,9 @@ module OVIRT
       @client = client
       self
     end
+
+    def parse_version xml
+      (xml/'version').first[:major] +"."+ (xml/'version').first[:minor]
+    end
   end
 end
