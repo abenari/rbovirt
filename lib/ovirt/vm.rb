@@ -5,7 +5,7 @@ module OVIRT
 
   class VM < BaseObject
     attr_reader :description, :status, :memory, :profile, :display, :host, :cluster, :template, :macs
-    attr_reader :storage, :cores, :username, :creation_time
+    attr_reader :storage, :cores, :username, :creation_time, :os
     attr_reader :ip, :vnc
 
     def initialize(client, xml)
@@ -13,6 +13,10 @@ module OVIRT
       @username = client.credentials[:username]
       parse_xml_attributes!(xml)
       self
+    end
+
+    def running?
+      @status =~ /up/i
     end
 
     def self.to_xml(template_name, cluster_name, opts={})
@@ -103,6 +107,10 @@ module OVIRT
         :address => ((xml/'display/address').first.text rescue "127.0.0.1"),
         :port => ((xml/'display/port').first.text rescue "5890")
       } unless @ip
+      @os = {
+          :type => (xml/'os').first[:type],
+          :boot => (xml/'os/boot').collect {|boot| boot[:dev] }
+      }
     end
 
   end
