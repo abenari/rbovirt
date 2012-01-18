@@ -4,13 +4,12 @@ module OVIRT
     FILEINJECT_PATH = "user-data.txt"
 
   class VM < BaseObject
-    attr_reader :description, :status, :memory, :profile, :display, :host, :cluster, :template, :macs
-    attr_reader :storage, :cores, :username, :creation_time, :os
-    attr_reader :ip, :vnc
+    attr_reader :description, :status, :memory, :profile, :display, :host, :cluster, :template, :nics
+    attr_reader :storage, :cores, :creation_time, :os, :ip, :vnc
+    attr_accessor :nics, :disks
 
     def initialize(client, xml)
       super(client, xml[:id], xml[:href], (xml/'name').first.text)
-      @username = client.credentials[:username]
       parse_xml_attributes!(xml)
       self
     end
@@ -54,39 +53,11 @@ module OVIRT
       Nokogiri::XML(builder.to_xml).root.to_s
     end
 
-    def self.disk_xml(storage_domain_id,opts={})
-       builder = Nokogiri::XML::Builder.new do
-        disk_{
-          storage_domains_{
-            storage_domain_(:id => storage_domain_id)
-          }
-          size_(opts[:size] || 8589934592)
-          type_(opts[:type] || 'system')
-          bootable_(opts[:bootable] || 'true')
-          interface_(opts[:interface] || 'virtio')
-          format_(opts[:format] || 'cow')
-          sparse_(opts[:sparse] || 'true')
-        }
-      end
-      Nokogiri::XML(builder.to_xml).root.to_s
-    end
-
-    def self.nic_xml(opts={})
-      builder = Nokogiri::XML::Builder.new do
-        nic{
-          name_(opts[:name] || 'eth0')
-          network{
-            name_(opts[:network] || 'ovirtmgmt')
-          }
-        }
-      end
-      Nokogiri::XML(builder.to_xml).root.to_s
-    end
     private
 
     def parse_xml_attributes!(xml)
       @description = ((xml/'description').first.text rescue '')
-      @status = (xml/'status').first.text
+      @status = ((xml/'status').first.text rescue 'unknown')
       @memory = (xml/'memory').first.text
       @profile = (xml/'type').first.text
       @template = Link::new(@client, (xml/'template').first[:id], (xml/'template').first[:href])
@@ -100,7 +71,6 @@ module OVIRT
       }
       @cores = ((xml/'cpu/topology').first[:cores] rescue nil)
       @storage = ((xml/'disks/disk/size').first.text rescue nil)
-      @macs = (xml/'nics/nic/mac').collect { |mac| mac[:address] }
       @creation_time = (xml/'creation_time').text
       @ip = ((xml/'guest_info/ip').first[:address] rescue nil)
       @vnc = {

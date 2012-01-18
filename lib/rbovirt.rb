@@ -5,6 +5,8 @@ require "ovirt/host"
 require "ovirt/storage_domain"
 require "ovirt/template"
 require "ovirt/vm"
+require "ovirt/disk"
+require "ovirt/nic"
 
 require "nokogiri"
 require "rest_client"
@@ -33,10 +35,16 @@ module OVIRT
       @api_entrypoint = api_entrypoint
     end
 
-    def vm(vm_id)
+    def vm(vm_id, opts={})
       headers = {:accept => "application/xml; detail=disks; detail=nics; detail=hosts"}
-      vm = http_get("/vms/%s" % vm_id, headers).root
-      OVIRT::VM::new(self, vm)
+      vm = OVIRT::VM::new(self,  http_get("/vms/%s" % vm_id, headers).root)
+      vm.nics = http_get("/vms/%s/nics" % vm_id, headers).xpath('/nics/nic').collect do |nic|
+        OVIRT::Nic::new(self, nic)
+      end if opts[:nics]
+      vm.disks = http_get("/vms/%s/disks" % vm_id, headers).xpath('/disks/disk').collect do |disk|
+        OVIRT::Disk::new(self, disk)
+      end if opts[:disks]
+      vm
     end
 
     def vms(opts={})
@@ -78,12 +86,12 @@ module OVIRT
 
     def add_disk(vm_id, opts={})
       storage_domain_id = opts[:storage_domain] || storagedomains.first.id
-      result_xml = http_post("/vms/%s/disks" % vm_id, VM.disk_xml(storage_domain_id, opts))
+      result_xml = http_post("/vms/%s/disks" % vm_id, OVIRT::Disk.to_xml(storage_domain_id, opts))
     end
 
 
     def add_nic(vm_id, opts={})
-      http_post("/vms/%s/nics" % vm_id, VM.nic_xml( opts))
+      http_post("/vms/%s/nics" % vm_id, OVIRT::Nic.to_xml( opts))
     end
 
     def create_template(vm_id, opts)
