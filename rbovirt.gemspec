@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rbovirt}
-  s.version = "0.0.2"
+  s.version = "0.0.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Amos Benari"]
-  s.date = %q{2012-01-16}
+  s.date = %q{2012-01-18}
   s.description = %q{A Ruby client for oVirt REST API}
   s.email = %q{abenari@redhat.com}
   s.extra_rdoc_files = [
@@ -26,7 +26,9 @@ Gem::Specification.new do |s|
     "lib/ovirt/base_object.rb",
     "lib/ovirt/cluster.rb",
     "lib/ovirt/datacenter.rb",
+    "lib/ovirt/disk.rb",
     "lib/ovirt/host.rb",
+    "lib/ovirt/nic.rb",
     "lib/ovirt/storage_domain.rb",
     "lib/ovirt/template.rb",
     "lib/ovirt/vm.rb",
