@@ -35,8 +35,8 @@ class TestRbovirt < Test::Unit::TestCase
     params[:cluster_name] = "test"
     vm = @client.create_vm("Blank",params)
 
-    @client.add_disk(vm.id)
-    @client.add_nic(vm.id)
+    @client.add_volume(vm.id)
+    @client.add_interface(vm.id)
     while @client.vm(vm.id).status !~ /down/i do
     end
     template_name = "test_template"
@@ -72,8 +72,8 @@ class TestRbovirt < Test::Unit::TestCase
     params[:name] = name
     params[:cluster_name] = "test"
     vm = @client.create_vm("Blank",params)
-    @client.add_disk(vm.id)
-    @client.add_nic(vm.id)
+    @client.add_volume(vm.id)
+    @client.add_interface(vm.id)
     while @client.vm(vm.id).status !~ /down/i do
     end  
     assert @client.vm_action(vm.id, :start)

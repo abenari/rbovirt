@@ -1,6 +1,6 @@
 module OVIRT
 
-  class Nic < BaseObject
+  class Interface < BaseObject
     attr_reader :name, :mac, :interface, :network, :vm
 
     def initialize(client, xml)

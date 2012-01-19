@@ -4,9 +4,9 @@ module OVIRT
     FILEINJECT_PATH = "user-data.txt"
 
   class VM < BaseObject
-    attr_reader :description, :status, :memory, :profile, :display, :host, :cluster, :template, :nics
+    attr_reader :description, :status, :memory, :profile, :display, :host, :cluster, :template
     attr_reader :storage, :cores, :creation_time, :os, :ip, :vnc
-    attr_accessor :nics, :disks
+    attr_accessor :interfaces, :volumes
 
     def initialize(client, xml)
       super(client, xml[:id], xml[:href], (xml/'name').first.text)
@@ -16,6 +16,14 @@ module OVIRT
 
     def running?
       @status =~ /up/i
+    end
+
+    def interfaces
+      @interfaces ||= @client.interfaces(id)
+    end
+
+    def disks
+      @disks ||= @client.disks(id)
     end
 
     def self.to_xml(template_name, cluster_name, opts={})

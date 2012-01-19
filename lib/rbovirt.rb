@@ -5,8 +5,8 @@ require "ovirt/host"
 require "ovirt/storage_domain"
 require "ovirt/template"
 require "ovirt/vm"
-require "ovirt/disk"
-require "ovirt/nic"
+require "ovirt/volume"
+require "ovirt/interface"
 
 require "nokogiri"
 require "rest_client"
@@ -38,13 +38,22 @@ module OVIRT
     def vm(vm_id, opts={})
       headers = {:accept => "application/xml; detail=disks; detail=nics; detail=hosts"}
       vm = OVIRT::VM::new(self,  http_get("/vms/%s" % vm_id, headers).root)
-      vm.nics = http_get("/vms/%s/nics" % vm_id, headers).xpath('/nics/nic').collect do |nic|
-        OVIRT::Nic::new(self, nic)
-      end if opts[:nics]
-      vm.disks = http_get("/vms/%s/disks" % vm_id, headers).xpath('/disks/disk').collect do |disk|
-        OVIRT::Disk::new(self, disk)
-      end if opts[:disks]
+      # optional eager loading
+      vm.interfaces = interfaces(vm_id) if opts[:include] && opts[:include].include?(:interfaces)
+      vm.volumes = volumes(vm_id) if opts[:include] && opts[:include].include?(:volumes)
       vm
+    end
+
+    def interfaces vm_id
+      http_get("/vms/%s/nics" % vm_id, http_headers).xpath('/nics/nic').collect do |nic|
+        OVIRT::Interface::new(self, nic)
+      end
+    end
+
+    def volumes vm_id
+      http_get("/vms/%s/disks" % vm_id, http_headers).xpath('/disks/disk').collect do |disk|
+        OVIRT::Volume::new(self, disk)
+      end
     end
 
     def vms(opts={})
@@ -84,14 +93,14 @@ module OVIRT
       OVIRT::VM::new(self, result_xml.root)
     end
 
-    def add_disk(vm_id, opts={})
+    def add_volume(vm_id, opts={})
       storage_domain_id = opts[:storage_domain] || storagedomains.first.id
-      result_xml = http_post("/vms/%s/disks" % vm_id, OVIRT::Disk.to_xml(storage_domain_id, opts))
+      result_xml = http_post("/vms/%s/disks" % vm_id, OVIRT::Volume.to_xml(storage_domain_id, opts))
     end
 
 
-    def add_nic(vm_id, opts={})
-      http_post("/vms/%s/nics" % vm_id, OVIRT::Nic.to_xml( opts))
+    def add_interface(vm_id, opts={})
+      http_post("/vms/%s/nics" % vm_id, OVIRT::Interface.to_xml( opts))
     end
 
     def create_template(vm_id, opts)

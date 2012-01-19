@@ -1,6 +1,6 @@
 module OVIRT
 
-  class Disk < BaseObject
+  class Volume < BaseObject
     attr_reader :size, :disk_type, :bootable, :interface, :format, :sparse, :storage_domain, :vm
 
     def initialize(client, xml)
