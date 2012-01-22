@@ -15,7 +15,7 @@ module OVIRT
     end
 
     def running?
-      @status =~ /up/i
+      !(@status =~ /down/i)
     end
 
     def interfaces
