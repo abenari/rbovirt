@@ -74,17 +74,17 @@ module OVIRT
     end
 
     def api_version
-      result_xml = http_get("/")
-      (result_xml/'/api/product_info/version')
+      xml = http_get("/")/'/api/product_info/version'
+      (xml/'version').first[:major] +"."+ (xml/'version').first[:minor]
     end
 
     def api_version?(major)
-      api_version.first[:major].strip == major
+      api_version.split('.')[0] == major
     end
 
     def cluster_version?(cluster_id, major)
-      result_xml = http_get("/clusters/%s" % cluster_id)
-      (result_xml/'/cluster/version').first[:major].strip == major
+      c = cluster(cluster_id)
+      c.version.split('.')[0] == major
     end
 
     def create_vm(template_name, opts)

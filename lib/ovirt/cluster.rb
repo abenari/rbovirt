@@ -12,7 +12,7 @@ module OVIRT
 
     def parse_xml_attributes!(xml)
       @description = ((xml/'description').first.text rescue nil)
-      @version =((xml/'version').first[:major].strip rescue nil)
+      @version = parse_version(xml)
       unless (xml/'data_center').empty?
         @datacenter = Link::new(@client, (xml/'data_center').first[:id], (xml/'data_center').first[:href])
       end
