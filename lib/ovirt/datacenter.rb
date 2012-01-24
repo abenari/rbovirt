@@ -15,7 +15,7 @@ module OVIRT
       @description = (xml/'description').first.text rescue nil
       @status = (xml/'status').first.text.strip
       @storage_type = (xml/'storage_type').first.text
-      @storage_format = (xml/'storage_format').first.text
+      @storage_format = (xml/'storage_format').first.text rescue nil
       @supported_versions = (xml/'supported_versions').collect { |v|
         parse_version v
       }

@@ -27,11 +27,12 @@ module OVIRT
 
   class Client
 
-    attr_reader :credentials, :api_entrypoint, :datacenter_id
+    attr_reader :credentials, :api_entrypoint, :datacenter_id, :cluster_id
 
-    def initialize(username, password, api_entrypoint, datacenter_id=nil)
+    def initialize(username, password, api_entrypoint, datacenter_id=nil, cluster_id=nil)
       @credentials = { :username => username, :password => password }
       @datacenter_id = datacenter_id
+      @cluster_id = cluster_id
       @api_entrypoint = api_entrypoint
     end
 
@@ -113,7 +114,7 @@ module OVIRT
     end
 
     def templates(opts={})
-      search= opts[:search] || ("datacenter=$s" % current_datacenter.name)
+      search= opts[:search] || ("datacenter=%s" % current_datacenter.name)
       http_get("/templates?search=%s" % CGI.escape(search)).xpath('/templates/template').collect do |t|
         OVIRT::Template::new(self, t)
       end.compact
@@ -134,7 +135,7 @@ module OVIRT
 
     def clusters(opts={})
       headers = {:accept => "application/xml; detail=datacenters"}
-      search= opts[:search] || ("datacenter=$s" % current_datacenter.name)
+      search= opts[:search] || ("datacenter=%s" % current_datacenter.name)
       http_get("/clusters?search=%s" % CGI.escape(search), headers).xpath('/clusters/cluster').collect do |cl|
         OVIRT::Cluster.new(self, cl)
       end
@@ -148,6 +149,10 @@ module OVIRT
 
     def current_datacenter
       @current_datacenter ||= self.datacenter_id ? datacenter(self.datacenter_id) : datacenters.first
+    end
+
+    def current_cluster
+      @current_cluster ||= self.cluster_id ? cluster(self.cluster_id) : clusters.first
     end
 
     def datacenter(datacenter_id)
@@ -165,7 +170,7 @@ module OVIRT
     end
     
     def hosts(opts={})
-      search= opts[:search] || ("datacenter=$s" % current_datacenter.name)
+      search= opts[:search] || ("datacenter=%s" % current_datacenter.name)
       http_get("/hosts?search=%s" % CGI.escape(search)).xpath('/hosts/host').collect do |h|
         OVIRT::Host::new(self, h)
       end
