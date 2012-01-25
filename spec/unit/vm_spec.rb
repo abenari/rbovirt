@@ -67,11 +67,14 @@ END_HEREDOC
     end
 
     it "should parse VM xml" do
-      OVIRT::VM.new(nil, Nokogiri::XML(@xml).xpath('/'))
+      vm = OVIRT::VM.new(nil, Nokogiri::XML(@xml).xpath('/'))
+      vm.class.should eql(OVIRT::VM)
     end
 
     it "create vm xml" do
-      OVIRT::VM.to_xml("template", "cluster")
+      opts = {:cluster_name=>'cluster', :template_name =>'template'}
+      xml = OVIRT::VM.to_xml(opts)
+      xml.nil?.should eql(false)
     end
 
     it "should be running" do

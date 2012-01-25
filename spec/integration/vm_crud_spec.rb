@@ -3,7 +3,7 @@ require "#{File.dirname(__FILE__)}/../spec_helper"
 describe "VM Life cycle" do
 
   before(:all) do
-    user="admin@internal"
+   user="admin@internal"
     password="123123"
     hostname = "ovirt.sat.lab.tlv.redhat.com"
     port = "8080"
@@ -19,7 +19,7 @@ describe "VM Life cycle" do
       params = {}
       params[:name] = name
       params[:cluster_name] = "test"
-      @vm = @client.create_vm("Blank",params)
+      @vm = @client.create_vm(params)
       @client.add_volume(@vm.id)
       @client.add_interface(@vm.id)
       while @client.vm(@vm.id).status !~ /down/i do
@@ -57,7 +57,7 @@ describe "VM Life cycle" do
       params = {}
       params[:name] = name
       params[:cluster_name] = "test"
-      vm = @client.create_vm("Blank",params)
+      vm = @client.create_vm(params)
       @client.destroy_vm(vm.id)
     end
 
@@ -66,7 +66,7 @@ describe "VM Life cycle" do
       params = {}
       params[:name] = name
       params[:cluster_name] = "test"
-      vm = @client.create_vm("Blank",params)
+      vm = @client.create_vm(params)
       vm.class.to_s.should eql("OVIRT::VM")
       @client.destroy_vm(vm.id)
     end

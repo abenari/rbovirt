@@ -88,9 +88,9 @@ module OVIRT
       c.version.split('.')[0] == major
     end
 
-    def create_vm(template_name, opts)
-      cluster_name = opts[:cluster_name] || clusters.first.name
-      result_xml = http_post("/vms",OVIRT::VM.to_xml(template_name, cluster_name, opts))
+    def create_vm(opts)
+      opts[:cluster_name] ||= clusters.first.name
+      result_xml = http_post("/vms",OVIRT::VM.to_xml(opts))
       OVIRT::VM::new(self, result_xml.root)
     end
 
