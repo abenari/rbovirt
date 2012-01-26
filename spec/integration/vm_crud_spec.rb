@@ -32,7 +32,7 @@ describe "VM Life cycle" do
 
     it "test_should_create_template" do
       template_name = "test_template"
-      template = @client.create_template(@vm.id, :name => template_name, :description => "test_template")
+      template = @client.create_template(:vm => @vm.id, :name => template_name, :description => "test_template")
       template.class.to_s.should eql("OVIRT::Template")
       while @client.vm(@vm.id).status !~ /down/i do
       end

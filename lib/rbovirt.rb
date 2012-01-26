@@ -104,8 +104,8 @@ module OVIRT
       http_post("/vms/%s/nics" % vm_id, OVIRT::Interface.to_xml( opts))
     end
 
-    def create_template(vm_id, opts)
-      template = http_post("/templates", Template.to_xml(vm_id, opts))
+    def create_template(opts)
+      template = http_post("/templates", Template.to_xml(opts))
       OVIRT::Template::new(self, template.root)
     end
 

@@ -8,12 +8,12 @@ module OVIRT
       self
     end
 
-    def self.to_xml(vm_id, opts={})
+    def self.to_xml(opts={})
       builder = Nokogiri::XML::Builder.new do
         template_ {
           name_ opts[:name] || "t-#{Time.now.to_i}"
           description opts[:description] || ''
-          vm(:id => vm_id)
+          vm(:id => opts[:vm])
         }
       end
       Nokogiri::XML(builder.to_xml).root.to_s
@@ -22,9 +22,23 @@ module OVIRT
     private
 
     def parse_xml_attributes!(xml)
-      @description = ((xml/'description').first.text rescue nil)
-      @status = (xml/'status').first.text
+
+      @description = ((xml/'description').first.text rescue '')
+      @status = ((xml/'status').first.text rescue 'unknown')
+      @memory = (xml/'memory').first.text
+      @profile = (xml/'type').first.text
       @cluster = Link::new(@client, (xml/'cluster').first[:id], (xml/'cluster').first[:href])
+      @display = {
+        :type => (xml/'display/type').first.text,
+        :monitors => (xml/'display/monitors').first.text
+      }
+      @cores = ((xml/'cpu/topology').first[:cores] rescue nil)
+      @storage = ((xml/'disks/disk/size').first.text rescue nil)
+      @creation_time = (xml/'creation_time').text
+      @os = {
+          :type => (xml/'os').first[:type],
+          :boot => (xml/'os/boot').collect {|boot| boot[:dev] }
+      }
     end
   end
 end
