@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{rbovirt}
-  s.version = "0.0.3"
+  s.version = "0.0.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Amos Benari"]
-  s.date = %q{2012-01-18}
+  s.date = %q{2012-01-30}
   s.description = %q{A Ruby client for oVirt REST API}
   s.email = %q{abenari@redhat.com}
   s.extra_rdoc_files = [
@@ -26,16 +26,18 @@ Gem::Specification.new do |s|
     "lib/ovirt/base_object.rb",
     "lib/ovirt/cluster.rb",
     "lib/ovirt/datacenter.rb",
-    "lib/ovirt/disk.rb",
     "lib/ovirt/host.rb",
-    "lib/ovirt/nic.rb",
+    "lib/ovirt/interface.rb",
     "lib/ovirt/storage_domain.rb",
     "lib/ovirt/template.rb",
     "lib/ovirt/vm.rb",
+    "lib/ovirt/volume.rb",
     "lib/rbovirt.rb",
     "rbovirt.gemspec",
-    "test/helper.rb",
-    "test/test_rbovirt.rb"
+    "spec/integration/api_spec.rb",
+    "spec/integration/vm_crud_spec.rb",
+    "spec/spec_helper.rb",
+    "spec/unit/vm_spec.rb"
   ]
   s.homepage = %q{http://github.com/abenari/rbovirt}
   s.licenses = ["MIT"]
@@ -54,6 +56,7 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_development_dependency(%q<jeweler>, ["~> 1.6.4"])
       s.add_development_dependency(%q<rcov>, [">= 0"])
+      s.add_development_dependency(%q<rspec-rails>, ["~> 2.6"])
     else
       s.add_dependency(%q<nokogiri>, [">= 0"])
       s.add_dependency(%q<rest-client>, [">= 0"])
@@ -61,6 +64,7 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<bundler>, ["~> 1.0.0"])
       s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
       s.add_dependency(%q<rcov>, [">= 0"])
+      s.add_dependency(%q<rspec-rails>, ["~> 2.6"])
     end
   else
     s.add_dependency(%q<nokogiri>, [">= 0"])
@@ -69,6 +73,7 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<bundler>, ["~> 1.0.0"])
     s.add_dependency(%q<jeweler>, ["~> 1.6.4"])
     s.add_dependency(%q<rcov>, [">= 0"])
+    s.add_dependency(%q<rspec-rails>, ["~> 2.6"])
   end
 end
 
