@@ -21,8 +21,8 @@ module OVIRT
       @interfaces ||= @client.interfaces(id)
     end
 
-    def disks
-      @disks ||= @client.disks(id)
+    def volumes
+      @volumes ||= @client.disks(id)
     end
 
     def self.to_xml( opts={})
@@ -42,9 +42,9 @@ module OVIRT
             cluster_{ name_(opts[:cluster_name])}
           end
           type_ opts[:hwp_id] || 'Server'
-          memory opts[:hwp_memory] ? (opts[:hwp_memory].to_i*1024*1024).to_s : (512*1024*1024).to_s
+          memory opts[:memory] ? opts[:memory].to_s : (512*1024*1024).to_s
           cpu {
-            topology( :cores => (opts[:hwp_cpu] || '1'), :sockets => '1' )
+            topology( :cores => (opts[:cores] || '1'), :sockets => '1' )
           }
           os{
             boot(:dev=>'network')
