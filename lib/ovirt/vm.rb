@@ -82,7 +82,7 @@ module OVIRT
         :port => ((xml/'display/port').first.text rescue nil),
         :monitors => (xml/'display/monitors').first.text
       }
-      @cores = ((xml/'cpu/topology').first[:cores] rescue nil)
+      @cores = ((xml/'cpu/topology').first[:cores].to_i * (xml/'cpu/topology').first[:sockets].to_i rescue nil)
       @storage = ((xml/'disks/disk/size').first.text rescue nil)
       @creation_time = (xml/'creation_time').text
       @ip = ((xml/'guest_info/ip').first[:address] rescue nil)

@@ -7,6 +7,7 @@ require "ovirt/template"
 require "ovirt/vm"
 require "ovirt/volume"
 require "ovirt/interface"
+require "ovirt/network"
 
 require "nokogiri"
 require "rest_client"
@@ -144,7 +145,14 @@ module OVIRT
     def cluster(cluster_id)
       headers = {:accept => "application/xml; detail=datacenters"}
       cluster_xml = http_get("/clusters/%s" % cluster_id, headers)
-      OVIRT::Cluster.new(self, cluster_xml)
+      OVIRT::Cluster.new(self, cluster_xml.root)
+    end
+
+    def networks(opts)
+      cluster_id = opts[:cluster_id] || current_cluster.id
+      http_get("/clusters/%s/networks" % cluster_id, http_headers).xpath('/networks/network').collect do |cl|
+        OVIRT::Network.new(self, cl)
+      end
     end
 
     def current_datacenter
