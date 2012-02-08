@@ -67,7 +67,7 @@ END_HEREDOC
     end
 
     it "should parse VM xml" do
-      vm = OVIRT::VM.new(nil, Nokogiri::XML(@xml).xpath('/'))
+      vm = OVIRT::VM.new(nil, Nokogiri::XML(@xml).xpath('/').first)
       vm.class.should eql(OVIRT::VM)
     end
 
@@ -78,7 +78,7 @@ END_HEREDOC
     end
 
     it "should be running" do
-      vm = OVIRT::VM.new(nil, Nokogiri::XML(@xml).xpath('/'))
+      vm = OVIRT::VM.new(nil, Nokogiri::XML(@xml).xpath('/').first)
       vm.running?.should eql(true)
     end
 
