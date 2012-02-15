@@ -5,7 +5,7 @@ module OVIRT
 
   class VM < BaseObject
     attr_reader :description, :status, :memory, :profile, :display, :host, :cluster, :template
-    attr_reader :storage, :cores, :creation_time, :os, :ip, :vnc
+    attr_reader :storage, :cores, :creation_time, :os, :ips, :vnc
     attr_accessor :interfaces, :volumes
 
     def initialize(client, xml)
@@ -85,7 +85,7 @@ module OVIRT
       @cores = ((xml/'cpu/topology').first[:cores].to_i * (xml/'cpu/topology').first[:sockets].to_i rescue nil)
       @storage = ((xml/'disks/disk/size').first.text rescue nil)
       @creation_time = (xml/'creation_time').text
-      @ip = ((xml/'guest_info/ip').first[:address] rescue nil)
+      @ips = (xml/'guest_info/ips/ip').map { |ip| ip[:address] }
       @vnc = {
         :address => ((xml/'display/address').first.text rescue "127.0.0.1"),
         :port => ((xml/'display/port').first.text rescue "5890")
