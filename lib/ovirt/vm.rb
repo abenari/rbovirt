@@ -47,11 +47,11 @@ module OVIRT
             topology( :cores => (opts[:cores] || '1'), :sockets => '1' )
           }
           os{
-            boot(:dev=>'network')
-            boot(:dev=>'hd')
+            boot(:dev=> opts[:boot_dev1] || 'network')
+            boot(:dev=> opts[:boot_dev2] || 'hd')
           }
           display_{
-            type_('vnc')
+            type_(opts[:display] || 'spice')
           }
           if(opts[:user_data] && !opts[:user_data].empty?)
             custom_properties {
