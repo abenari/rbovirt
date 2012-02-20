@@ -95,6 +95,12 @@ module OVIRT
       OVIRT::VM::new(self, result_xml.root)
     end
 
+    def update_vm(opts)
+      opts[:cluster_name] ||= clusters.first.name
+      result_xml = http_put("/vms/%s" % opts[:id], OVIRT::VM.to_xml(opts))
+      OVIRT::VM::new(self, result_xml.root)
+    end
+
     def add_volume(vm_id, opts={})
       storage_domain_id = opts[:storage_domain] || storagedomains.first.id
       result_xml = http_post("/vms/%s/disks" % vm_id, OVIRT::Volume.to_xml(storage_domain_id, opts))
@@ -209,6 +215,14 @@ module OVIRT
     def http_post(suburl, body, headers={})
       begin
         Nokogiri::XML(RestClient::Resource.new(@api_entrypoint)[suburl].post(body, http_headers(headers)))
+      rescue
+        handle_fault $!
+      end
+    end
+
+    def http_put(suburl, body, headers={})
+      begin
+        Nokogiri::XML(RestClient::Resource.new(@api_entrypoint)[suburl].put(body, http_headers(headers)))
       rescue
         handle_fault $!
       end

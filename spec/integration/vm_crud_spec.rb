@@ -5,7 +5,7 @@ describe "VM Life cycle" do
   before(:all) do
    user="admin@internal"
     password="123123"
-    hostname = "ovirt.sat.lab.tlv.redhat.com"
+    hostname = "covirt.sat.lab.tlv.redhat.com"
     port = "8080"
     url = "http://#{hostname}:#{port}/api"
     @blank_template_id = "00000000-0000-0000-0000-000000000000"
@@ -16,10 +16,7 @@ describe "VM Life cycle" do
 
     before(:all) do
       name = 'vm-'+Time.now.to_i.to_s
-      params = {}
-      params[:name] = name
-      params[:cluster_name] = "test"
-      @vm = @client.create_vm(params)
+      @vm = @client.create_vm(:name => name)
       @client.add_volume(@vm.id)
       @client.add_interface(@vm.id)
       while @client.vm(@vm.id).status !~ /down/i do
@@ -54,19 +51,18 @@ describe "VM Life cycle" do
 
     it "test_should_destroy_vm" do
       name = 'd-'+Time.now.to_i.to_s
-      params = {}
-      params[:name] = name
-      params[:cluster_name] = "test"
-      vm = @client.create_vm(params)
+      vm = @client.create_vm(:name => name)
       @client.destroy_vm(vm.id)
+    end
+
+    it "test_should_update_vm" do
+      name = 'u-'+Time.now.to_i.to_s
+      @client.update_vm(:id => @vm.id, :name=> name)
     end
 
     it "test_should_create_a_vm" do
       name = 'c-'+Time.now.to_i.to_s
-      params = {}
-      params[:name] = name
-      params[:cluster_name] = "test"
-      vm = @client.create_vm(params)
+      vm = @client.create_vm(:name => name)
       vm.class.to_s.should eql("OVIRT::VM")
       @client.destroy_vm(vm.id)
     end
