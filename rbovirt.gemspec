@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Amos Benari"]
-  s.date = %q{2012-02-20}
+  s.date = %q{2012-03-12}
   s.description = %q{A Ruby client for oVirt REST API}
   s.email = %q{abenari@redhat.com}
   s.extra_rdoc_files = [
@@ -23,6 +23,12 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
+    "lib/client/cluster_api.rb",
+    "lib/client/datacenter_api.rb",
+    "lib/client/host_api.rb",
+    "lib/client/storage_domain_api.rb",
+    "lib/client/template_api.rb",
+    "lib/client/vm_api.rb",
     "lib/ovirt/base_object.rb",
     "lib/ovirt/cluster.rb",
     "lib/ovirt/datacenter.rb",
