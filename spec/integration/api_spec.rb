@@ -16,7 +16,7 @@ describe OVIRT, "API" do
   before(:all) do
     user="admin@internal"
     password="123123"
-    hostname = "ovirt.sat.lab.tlv.redhat.com"
+    hostname = "covirt.sat.lab.tlv.redhat.com"
     port = "8080"
     url = "http://#{hostname}:#{port}/api"
     @blank_template_id = "00000000-0000-0000-0000-000000000000"

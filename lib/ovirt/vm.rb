@@ -18,11 +18,11 @@ module OVIRT
     end
 
     def interfaces
-      @interfaces ||= @client.interfaces(id)
+      @interfaces ||= @client.vm_interfaces(id)
     end
 
     def volumes
-      @volumes ||= @client.disks(id)
+      @volumes ||= @client.vm_volumes(id)
     end
 
     def self.to_xml( opts={})

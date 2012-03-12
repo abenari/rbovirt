@@ -19,10 +19,16 @@ module OVIRT
       Nokogiri::XML(builder.to_xml).root.to_s
     end
 
+    def interfaces
+      @interfaces ||= @client.template_interfaces(id)
+    end
+
+    def volumes
+      @volumes ||= @client.send(:volumes, "/templates/%s/disks" % id)
+    end
+
     private
-
     def parse_xml_attributes!(xml)
-
       @description = ((xml/'description').first.text rescue '')
       @status = ((xml/'status').first.text rescue 'unknown')
       @memory = (xml/'memory').first.text
