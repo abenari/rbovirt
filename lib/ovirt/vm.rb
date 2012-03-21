@@ -58,16 +58,14 @@ module OVIRT
             boot(:dev=> opts[:boot_dev2] || 'hd')
           }
           display_{
-            type_(opts[:display] || 'spice')
-          }
-          if(opts[:user_data] && !opts[:user_data].empty?)
-            custom_properties {
-              custom_property({
-                :name => "floppyinject",
-                :value => "#{opts[:fileinject_path] || OVIRT::FILEINJECT_PATH}:#{opts[:user_data]}",
-                :regexp => "^([^:]+):(.*)$"})
-            }
-          end
+            type_(opts[:display])
+          } if opts[:display]
+          custom_properties {
+            custom_property({
+              :name => "floppyinject",
+              :value => "#{opts[:fileinject_path] || OVIRT::FILEINJECT_PATH}:#{opts[:user_data]}",
+              :regexp => "^([^:]+):(.*)$"})
+          } if(opts[:user_data] && !opts[:user_data].empty?)
         }
       end
       Nokogiri::XML(builder.to_xml).root.to_s
