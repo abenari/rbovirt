@@ -25,6 +25,13 @@ module OVIRT
       @volumes ||= @client.vm_volumes(id)
     end
 
+    def self.ticket options={}
+      builder = Nokogiri::XML::Builder.new do
+        action_{ ticket_{ expiry_(options[:expiry] || 120) } }
+      end
+      Nokogiri::XML(builder.to_xml).root.to_s
+    end
+
     def self.to_xml( opts={})
       builder = Nokogiri::XML::Builder.new do
         vm{

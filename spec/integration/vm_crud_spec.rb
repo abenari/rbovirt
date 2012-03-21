@@ -49,6 +49,12 @@ describe "VM Life cycle" do
       @client.vm_action(@vm.id, :shutdown)
     end
 
+    it "test_should_set_vm_ticket" do
+      @client.vm_action(@vm.id, :start)
+      @client.set_ticket(@vm.id)
+      @client.vm_action(@vm.id, :shutdown)
+    end
+
     it "test_should_destroy_vm" do
       name = 'd-'+Time.now.to_i.to_s
       vm = @client.create_vm(:name => name)

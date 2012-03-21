@@ -56,6 +56,12 @@ module OVIRT
       http_delete("/vms/%s" % id)
     end
 
+    def set_ticket(vm_id, options={})
+      ticket = OVIRT::VM.ticket(options)
+      xml_response = http_post("/vms/%s/ticket" % vm_id, ticket)
+      (xml_response/'action/ticket/value').first.text
+    end
+
     def update_vm(opts)
       opts[:cluster_name] ||= clusters.first.name
       result_xml = http_put("/vms/%s" % opts[:id], OVIRT::VM.to_xml(opts))
