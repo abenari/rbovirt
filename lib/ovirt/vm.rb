@@ -32,7 +32,7 @@ module OVIRT
       Nokogiri::XML(builder.to_xml).root.to_s
     end
 
-    def self.to_xml( opts={})
+    def self.to_xml(opts={})
       builder = Nokogiri::XML::Builder.new do
         vm{
           name_ opts[:name] || "i-#{Time.now.to_i}"
@@ -64,7 +64,7 @@ module OVIRT
             custom_properties {
               custom_property({
                 :name => "floppyinject",
-                :value => "#{OVIRT::FILEINJECT_PATH}:#{opts[:user_data]}",
+                :value => "#{opts[:fileinject_path] || OVIRT::FILEINJECT_PATH}:#{opts[:user_data]}",
                 :regexp => "^([^:]+):(.*)$"})
             }
           end
