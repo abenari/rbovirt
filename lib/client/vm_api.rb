@@ -43,8 +43,12 @@ module OVIRT
     end
 
     def add_volume(vm_id, opts={})
-      storage_domain_id = opts[:storage_domain] || storagedomains.first.id
+      storage_domain_id = opts[:storage_domain] || storagedomains(:role => 'data').first.id
       http_post("/vms/%s/disks" % vm_id, OVIRT::Volume.to_xml(storage_domain_id, opts))
+    end
+
+    def destroy_volume(vm_id, vol_id)
+      http_delete("/vms/%s/disks/%s" % [vm_id, vol_id])
     end
 
     def vm_action(id, action, opts={})
