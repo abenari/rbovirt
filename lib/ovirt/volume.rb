@@ -16,7 +16,7 @@ module OVIRT
             storage_domain_(:id => storage_domain_id)
           }
           size_(opts[:size] || 8589934592)
-          type_(opts[:type] || 'system')
+          type_(opts[:type] || 'data')
           bootable_(opts[:bootable] || 'true')
           interface_(opts[:interface] || 'virtio')
           format_(opts[:format] || 'cow')
@@ -29,7 +29,7 @@ module OVIRT
     def parse_xml_attributes!(xml)
      @storage_domain = (xml/'storage_domains/storage_domain').first[:id]
      @size = (xml/'size').first.text
-     @disk_type = (xml/'type').first.text
+     @disk_type = ((xml/'type').first.text rescue nil)
      @bootable = (xml/'bootable').first.text
      @interface = (xml/'interface').first.text
      @format = (xml/'format').first.text
