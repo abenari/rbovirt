@@ -43,7 +43,8 @@ module OVIRT
     end
 
     def add_volume(vm_id, opts={})
-      storage_domain_id = opts[:storage_domain] || storagedomains(:role => 'data').first.id
+      search = opts[:search] || ("datacenter=%s" % current_datacenter.name)
+      storage_domain_id = opts[:storage_domain] || storagedomains(:role => 'data', :search => search).first.id
       http_post("/vms/%s/disks" % vm_id, OVIRT::Volume.to_xml(storage_domain_id, opts))
     end
 
