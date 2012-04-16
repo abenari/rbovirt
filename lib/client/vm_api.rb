@@ -37,9 +37,11 @@ module OVIRT
     end
 
     def vm_volumes vm_id
-      http_get("/vms/%s/disks" % vm_id, http_headers).xpath('/disks/disk').collect do |disk|
+      volumes = http_get("/vms/%s/disks" % vm_id, http_headers).xpath('/disks/disk').collect do |disk|
         OVIRT::Volume::new(self, disk)
       end
+      #this is a workaround to a bug that the list is not sorted by default.
+      volumes.sort{ |l, r| l.name <=> r.name }
     end
 
     def add_volume(vm_id, opts={})
