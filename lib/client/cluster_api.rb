@@ -1,5 +1,10 @@
 module OVIRT
   class Client
+    def cluster_version(cluster_id)
+      c = cluster(cluster_id)
+      return c.version.split('.')[0].to_i, c.version.split('.')[1].to_i
+    end
+
     def cluster_version?(cluster_id, major)
       c = cluster(cluster_id)
       c.version.split('.')[0] == major

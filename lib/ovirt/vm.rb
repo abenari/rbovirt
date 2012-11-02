@@ -65,7 +65,12 @@ module OVIRT
               :name => "floppyinject",
               :value => "#{opts[:fileinject_path] || OVIRT::FILEINJECT_PATH}:#{opts[:user_data]}",
               :regexp => "^([^:]+):(.*)$"})
-          } if(opts[:user_data] && !opts[:user_data].empty?)
+          } if(opts[:user_data_method] && opts[:user_data_method] == :custom_property)
+          payloads {
+            payload(:type => 'floppy') {
+              file(:name => OVIRT::FILEINJECT_PATH) { content(Base64::decode64(opts[:user_data])) }
+            }
+          } if(opts[:user_data_method] && opts[:user_data_method] == :payload)
         }
       end
       Nokogiri::XML(builder.to_xml).root.to_s
