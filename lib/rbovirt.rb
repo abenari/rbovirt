@@ -53,6 +53,11 @@ module OVIRT
       api_version.split('.')[0] == major
     end
 
+    def floppy_hook?
+      xml = http_get("/capabilities")
+      !(xml/"version/custom_properties/custom_property[@name='floppyinject']").empty?
+    end
+
     private
     def current_datacenter
       @current_datacenter ||= self.datacenter_id ? datacenter(self.datacenter_id) : datacenters.first

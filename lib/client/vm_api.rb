@@ -14,6 +14,22 @@ module OVIRT
     end
 
     def create_vm(opts)
+      cluster_major_ver, cluster_minor_ver = cluster_version(self.cluster_id)
+
+      if opts[:user_data] and not opts[:user_data].empty?
+        if api_version?('3') and cluster_major_ver >= 3
+          if cluster_minor_ver >= 1
+            opts[:user_data_method] = :payload
+          elsif floppy_hook?
+            opts[:user_data_method] = :custom_property
+          else
+            raise "Required VDSM hook 'floppyinject' not supported by RHEV-M"
+          end
+        else
+          raise BackendVersionUnsupportedException.new
+        end
+      end
+
       opts[:cluster_name] ||= clusters.first.name
       OVIRT::VM::new(self, http_post("/vms",OVIRT::VM.to_xml(opts)).root)
     end
