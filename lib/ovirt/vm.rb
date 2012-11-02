@@ -49,10 +49,14 @@ module OVIRT
             cluster_{ name_(opts[:cluster_name])}
           end
           type_ opts[:hwp_id] || 'Server'
-          memory opts[:memory] ? opts[:memory].to_s : (512*1024*1024).to_s
-          cpu {
-            topology( :cores => (opts[:cores] || '1'), :sockets => '1' )
-          }
+          if opts[:memory]
+              memory opts[:memory]
+          end
+          if opts[:cores]
+             cpu {
+               topology( :cores => (opts[:cores] || '1'), :sockets => '1' )
+             }
+          end
           os{
             boot(:dev=> opts[:boot_dev1] || 'network')
             boot(:dev=> opts[:boot_dev2] || 'hd')
