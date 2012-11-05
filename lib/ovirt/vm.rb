@@ -72,7 +72,7 @@ module OVIRT
           } if(opts[:user_data_method] && opts[:user_data_method] == :custom_property)
           payloads {
             payload(:type => 'floppy') {
-              file(:name => OVIRT::FILEINJECT_PATH) { content(Base64::decode64(opts[:user_data])) }
+              file(:name => "#{opts[:fileinject_path] || OVIRT::FILEINJECT_PATH}") { content(Base64::decode64(opts[:user_data])) }
             }
           } if(opts[:user_data_method] && opts[:user_data_method] == :payload)
         }
