@@ -1,7 +1,7 @@
 module OVIRT
 
   class Volume < BaseObject
-    attr_reader :size, :disk_type, :bootable, :interface, :format, :sparse, :storage_domain, :vm
+    attr_reader :size, :disk_type, :bootable, :interface, :format, :sparse, :status, :storage_domain, :vm
 
     def initialize(client, xml)
       super(client, xml[:id], xml[:href], (xml/'name').first.text)
@@ -34,6 +34,7 @@ module OVIRT
      @interface = (xml/'interface').first.text
      @format = (xml/'format').first.text
      @sparse = (xml/'sparse').first.text
+     @status = (xml/'status').first.text
      @vm = Link::new(@client, (xml/'vm').first[:id], (xml/'vm').first[:href])
     end
 
