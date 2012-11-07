@@ -15,7 +15,7 @@ require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
   gem.name = "rbovirt"
-  gem.homepage = "http://github.com/abenari/rbovirt"
+  gem.homepage = "http://github.com/rbovirt/rbovirt"
   gem.license = "MIT"
   gem.summary = %Q{A Ruby client for oVirt REST API}
   gem.description = %Q{A Ruby client for oVirt REST API}
