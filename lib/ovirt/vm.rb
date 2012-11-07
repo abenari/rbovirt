@@ -14,7 +14,17 @@ module OVIRT
     end
 
     def running?
-      !(@status =~ /down/i)
+      !(@status =~ /down/i) && !(@status =~ /wait_for_launch/i)
+    end
+
+    # In oVirt 3.1 a vm can be marked down and not locked while its volumes are locked.
+    # This method indicates if it is safe to launch the vm.
+    def ready?
+      return false unless @status =~ /down/i
+      volumes.each do |volume|
+        return false if volume.status =~ /locked/i
+      end if @client.api_version?("3","1")
+      true
     end
 
     def interfaces
