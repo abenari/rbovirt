@@ -12,6 +12,11 @@ A Ruby client for oVirt.
 * Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
 * Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
 
+== running the tests
+* copy the file spec/endpoint.yml.example to spec/endpoint.yml
+* edit the endpoint properties (user, password and host name)
+* from command line run rake spec
+
 == Copyright
 
 Copyright (c) 2012 Amos Benari. See LICENSE.txt for

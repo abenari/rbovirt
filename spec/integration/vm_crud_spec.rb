@@ -3,12 +3,7 @@ require "#{File.dirname(__FILE__)}/../spec_helper"
 describe "VM Life cycle" do
 
   before(:all) do
-   user="admin@internal"
-    password="123123"
-    hostname = "covirt.sat.lab.tlv.redhat.com"
-    port = "8080"
-    url = "http://#{hostname}:#{port}/api"
-    @blank_template_id = "00000000-0000-0000-0000-000000000000"
+    user, password, url = endpoint
     @client = ::OVIRT::Client.new(user, password, url)
   end
 
@@ -19,7 +14,7 @@ describe "VM Life cycle" do
       @vm = @client.create_vm(:name => name)
       @client.add_volume(@vm.id)
       @client.add_interface(@vm.id)
-      while @client.vm(@vm.id).status !~ /down/i do
+      while !@client.vm(@vm.id).ready? do
       end
     end
 
@@ -31,7 +26,7 @@ describe "VM Life cycle" do
       template_name = "test_template"
       template = @client.create_template(:vm => @vm.id, :name => template_name, :description => "test_template")
       template.class.to_s.should eql("OVIRT::Template")
-      while @client.vm(@vm.id).status !~ /down/i do
+      while !@client.vm(@vm.id).ready? do
       end
       @client.destroy_template(template.id)
     end
@@ -51,6 +46,8 @@ describe "VM Life cycle" do
 
     it "test_should_set_vm_ticket" do
       @client.vm_action(@vm.id, :start)
+      while !@client.vm(@vm.id).running? do
+      end
       @client.set_ticket(@vm.id)
       @client.vm_action(@vm.id, :shutdown)
     end

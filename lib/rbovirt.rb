@@ -45,12 +45,13 @@ module OVIRT
     end
 
     def api_version
+      return @api_version unless @api_version.nil?
       xml = http_get("/")/'/api/product_info/version'
-      (xml/'version').first[:major] +"."+ (xml/'version').first[:minor]
+      @api_version = (xml/'version').first[:major] +"."+ (xml/'version').first[:minor]
     end
 
-    def api_version?(major)
-      api_version.split('.')[0] == major
+    def api_version?(major, minor=nil)
+      (api_version.split('.')[0] == major) && (minor.nil? ? true : api_version.split('.')[1] == minor)
     end
 
     def floppy_hook?
