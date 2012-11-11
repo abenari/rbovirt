@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "rbovirt"
-  s.version = File.read('VERSION')
+  s.version = "0.0.15"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Amos Benari"]
-  s.date = "2012-05-03"
+  s.date = "2012-11-11"
   s.description = "A Ruby client for oVirt REST API"
   s.email = "abenari@redhat.com"
   s.extra_rdoc_files = [
@@ -41,12 +41,14 @@ Gem::Specification.new do |s|
     "lib/ovirt/volume.rb",
     "lib/rbovirt.rb",
     "rbovirt.gemspec",
+    "spec/endpoint.yml.example",
     "spec/integration/api_spec.rb",
     "spec/integration/vm_crud_spec.rb",
+    "spec/lib/endpoint.rb",
     "spec/spec_helper.rb",
     "spec/unit/vm_spec.rb"
   ]
-  s.homepage = "http://github.com/abenari/rbovirt"
+  s.homepage = "http://github.com/rbovirt/rbovirt"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
   s.rubygems_version = "1.8.24"
