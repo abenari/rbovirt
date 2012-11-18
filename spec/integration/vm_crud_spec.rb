@@ -41,6 +41,8 @@ describe "VM Life cycle" do
 
     it "test_should_start_and_stop_vm" do
       @client.vm_action(@vm.id, :start)
+      while !@client.vm(@vm.id).running? do
+      end
       @client.vm_action(@vm.id, :shutdown)
     end
 
