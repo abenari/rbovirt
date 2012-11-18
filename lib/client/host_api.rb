@@ -6,8 +6,9 @@ module OVIRT
     end
 
     def hosts(opts={})
-      search= opts[:search] || ("datacenter=%s" % current_datacenter.name)
-      http_get("/hosts?search=%s" % CGI.escape(search)).xpath('/hosts/host').collect do |h|
+      path = "/hosts"
+      path += search_url(opts) unless filtered_api
+      http_get(path).xpath('/hosts/host').collect do |h|
         OVIRT::Host::new(self, h)
       end
     end

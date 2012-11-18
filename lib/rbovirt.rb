@@ -35,13 +35,14 @@ module OVIRT
 
   class Client
 
-    attr_reader :credentials, :api_entrypoint, :datacenter_id, :cluster_id
+    attr_reader :credentials, :api_entrypoint, :datacenter_id, :cluster_id, :filtered_api
 
-    def initialize(username, password, api_entrypoint, datacenter_id=nil, cluster_id=nil)
+    def initialize(username, password, api_entrypoint, datacenter_id=nil, cluster_id=nil, filtered_api = false)
       @credentials = { :username => username, :password => password }
       @datacenter_id = datacenter_id
       @cluster_id = cluster_id
       @api_entrypoint = api_entrypoint
+      @filtered_api = filtered_api
     end
 
     def api_version
@@ -60,6 +61,11 @@ module OVIRT
     end
 
     private
+    def search_url opts
+      search = opts[:search] || ("datacenter=%s" % current_datacenter.name)
+      "?search=%s" % CGI.escape(search)
+    end
+
     def current_datacenter
       @current_datacenter ||= self.datacenter_id ? datacenter(self.datacenter_id) : datacenters.first
     end
@@ -94,7 +100,7 @@ module OVIRT
 
     def http_delete(suburl)
       begin
-        headers = {:accept => 'application/xml'}.merge(auth_header)
+        headers = {:accept => 'application/xml'}.merge(auth_header).merge(filter_header)
         Nokogiri::XML(RestClient::Resource.new(@api_entrypoint)[suburl].delete(headers))
       rescue
         handle_fault $!
@@ -107,6 +113,10 @@ module OVIRT
       { :authorization => "Basic " + encoded_credentials }
     end
 
+    def filter_header
+      filtered_api ? { :filter => "true" } : {}
+    end
+
     def base_url
       url = URI.parse(@api_entrypoint)
       "#{url.scheme}://#{url.host}:#{url.port}"
@@ -117,15 +127,14 @@ module OVIRT
     end
 
     def has_datacenter?(vm)
-      value=!(vm/'data_center').empty?
-      value
+      (vm/'data_center').any?
     end
 
     def http_headers(headers ={})
       headers.merge({
         :content_type => 'application/xml',
-        :accept => 'application/xml'
-      }).merge(auth_header)
+        :accept => 'application/xml',
+      }).merge(auth_header).merge(filter_header)
     end
 
     def handle_fault(f)

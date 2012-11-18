@@ -7,8 +7,9 @@ module OVIRT
 
     def vms(opts={})
       headers = {:accept => "application/xml; detail=disks; detail=nics; detail=hosts"}
-      search= opts[:search] || ("datacenter=%s" % current_datacenter.name)
-      http_get("/vms?search=%s" % CGI.escape(search), headers).xpath('/vms/vm').collect do |vm|
+      path = "/vms"
+      path += search_url(opts) unless filtered_api
+      http_get(path, headers).xpath('/vms/vm').collect do |vm|
         OVIRT::VM::new(self, vm)
       end
     end
