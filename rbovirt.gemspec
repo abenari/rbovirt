@@ -48,7 +48,7 @@ Gem::Specification.new do |s|
     "spec/spec_helper.rb",
     "spec/unit/vm_spec.rb"
   ]
-  s.homepage = "http://github.com/rbovirt/rbovirt"
+  s.homepage = "http://github.com/abenari/rbovirt"
   s.licenses = ["MIT"]
   s.require_paths = ["lib"]
   s.rubygems_version = "1.8.24"
