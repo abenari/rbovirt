@@ -17,7 +17,7 @@ module OVIRT
       http_get(path, headers).xpath('/clusters/cluster').collect do |cl|
         cluster = OVIRT::Cluster.new(self, cl)
         #the following line is needed as a work-around a bug in RHEV 3.0 rest-api
-        cluster if !filtered_api || (cluster.datacenter.id == current_datacenter.id)
+        cluster if filtered_api || (cluster.datacenter.id == current_datacenter.id)
       end.compact
     end
 
