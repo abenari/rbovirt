@@ -1,6 +1,6 @@
 module OVIRT
  class Network < BaseObject
-    attr_reader :description, :datacenter, :cluster, :stp
+    attr_reader :description, :datacenter, :cluster, :stp, :status
 
     def initialize(client, xml)
       super(client, xml[:id], xml[:href], (xml/'name').first.text)
@@ -15,6 +15,7 @@ module OVIRT
       @stp = ((xml/'stp').first.text rescue false)
       @datacenter = Link::new(@client, (xml/'data_center').first[:id], (xml/'data_center').first[:href]) unless (xml/'data_center').empty?
       @cluster = Link::new(@client, (xml/'cluster').first[:id], (xml/'cluster').first[:href]) unless (xml/'cluster').empty?
+      @status = ((xml/'status/state').first.text rescue nil)
     end
 
   end
