@@ -36,10 +36,15 @@ module OVIRT
     end
 
     def vm_interfaces vm_id
-      http_get("/vms/%s/nics" % vm_id, http_headers).xpath('/nics/nic').collect do |nic|
-        OVIRT::Interface::new(self, nic)
+      begin
+        http_get("/vms/%s/nics" % vm_id, http_headers).xpath('/nics/nic').collect do |nic|
+          OVIRT::Interface::new(self, nic)
+        end
+      rescue => e # Catch case were vm_id is destroyed.
+        raise e unless e.message =~ /Entity not found/
+        []
       end
-    end
+    end 
 
     def destroy_interface(vm_id, interface_id)
       http_delete("/vms/%s/nics/%s" % [vm_id, interface_id])
@@ -54,8 +59,13 @@ module OVIRT
     end
 
     def vm_volumes vm_id
-      volumes = http_get("/vms/%s/disks" % vm_id, http_headers).xpath('/disks/disk').collect do |disk|
-        OVIRT::Volume::new(self, disk)
+      begin
+        volumes = http_get("/vms/%s/disks" % vm_id, http_headers).xpath('/disks/disk').collect do |disk|
+          OVIRT::Volume::new(self, disk)
+        end
+      rescue => e # Catch case were vm_id is destroyed.
+        raise e unless e.message =~ /Entity not found/
+        volumes = []
       end
       #this is a workaround to a bug that the list is not sorted by default.
       volumes.sort{ |l, r| l.name <=> r.name }
