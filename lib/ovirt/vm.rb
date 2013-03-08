@@ -5,7 +5,7 @@ module OVIRT
 
   class VM < BaseObject
     attr_reader :description, :status, :memory, :profile, :display, :host, :cluster, :template
-    attr_reader :storage, :cores, :creation_time, :os, :ips, :vnc
+    attr_reader :storage, :cores, :creation_time, :os, :ips, :vnc, :quota
     attr_accessor :interfaces, :volumes
 
     def initialize(client, xml)
@@ -31,6 +31,10 @@ module OVIRT
       @interfaces ||= @client.vm_interfaces(id)
     end
 
+    def quota
+      @quota ||= @client.quota(id)
+    end
+
     def volumes
       @volumes ||= @client.vm_volumes(id)
     end
@@ -52,6 +56,9 @@ module OVIRT
             template_{ name_(opts[:template_name])}
           else
             template_{name_('Blank')}
+          end
+          if opts[:quota]
+            quota_( :id => opts[:quota])
           end
           if opts[:cluster]
             cluster_( :id => opts[:cluster])
