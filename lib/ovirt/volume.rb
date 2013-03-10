@@ -1,7 +1,7 @@
 module OVIRT
 
   class Volume < BaseObject
-    attr_reader :size, :disk_type, :bootable, :interface, :format, :sparse, :status, :storage_domain, :vm
+    attr_reader :size, :disk_type, :bootable, :interface, :format, :sparse, :status, :storage_domain, :vm, :quota 
 
     def initialize(client, xml)
       super(client, xml[:id], xml[:href], (xml/'name').first.text)
@@ -21,6 +21,7 @@ module OVIRT
           interface_(opts[:interface] || 'virtio')
           format_(opts[:format] || 'cow')
           sparse_(opts[:sparse] || 'true')
+	  quota_( :id => opts[:quota])
         }
       end
       Nokogiri::XML(builder.to_xml).root.to_s
