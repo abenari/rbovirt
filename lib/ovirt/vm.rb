@@ -86,7 +86,7 @@ module OVIRT
             }
           end
           display_{
-            type_(opts[:display])
+            type_(opts[:display][:type])
           } if opts[:display]
           custom_properties {
             custom_property({
