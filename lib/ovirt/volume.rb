@@ -37,6 +37,7 @@ module OVIRT
      @sparse = (xml/'sparse').first.text
      @status = (xml/'status').first.text
      @vm = Link::new(@client, (xml/'vm').first[:id], (xml/'vm').first[:href]) rescue nil
+     @quota = ((xml/'quota').first[:id] rescue nil)
     end
 
   end
