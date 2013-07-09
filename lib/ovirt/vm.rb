@@ -133,6 +133,7 @@ module OVIRT
           :type => (xml/'os').first[:type],
           :boot => (xml/'os/boot').collect {|boot| boot[:dev] }
       }
+      @quota = ((xml/'quota').first[:id] rescue nil)
     end
 
   end
