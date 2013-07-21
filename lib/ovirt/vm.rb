@@ -119,6 +119,7 @@ module OVIRT
         :address => ((xml/'display/address').first.text rescue nil),
         :port => ((xml/'display/port').first.text rescue nil),
         :secure_port => ((xml/'display/secure_port').first.text rescue nil),
+        :subject => ((xml/'display/certificate/subject').first.text rescue nil),
         :monitors => (xml/'display/monitors').first.text
       }
       @cores = ((xml/'cpu/topology').first[:cores].to_i * (xml/'cpu/topology').first[:sockets].to_i rescue nil)
