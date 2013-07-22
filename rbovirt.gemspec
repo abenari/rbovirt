@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "rbovirt"
-  s.version = "0.0.20"
+  s.version = "0.0.21"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Amos Benari"]
-  s.date = "2013-05-21"
+  s.date = "2013-07-22"
   s.description = "A Ruby client for oVirt REST API"
   s.email = "abenari@redhat.com"
   s.extra_rdoc_files = [
