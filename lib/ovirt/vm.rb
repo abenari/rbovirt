@@ -135,6 +135,12 @@ module OVIRT
           :boot => (xml/'os/boot').collect {|boot| boot[:dev] }
       }
       @quota = ((xml/'quota').first[:id] rescue nil)
+
+      disks = xml/'disks/disk'
+      @volumes = disks.length > 0 ? disks.collect {|disk| OVIRT::Volume::new(@client, disk)} : nil
+
+      interfaces = xml/'nics/nic'
+      @interfaces = interfaces.length > 0 ? interfaces.collect {|nic| OVIRT::Interface::new(@client, nic)} : nil
     end
 
   end
