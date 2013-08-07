@@ -2,6 +2,7 @@
 #require 'bundler/setup'
 
 require 'rspec'
+require 'rspec/mocks'
 require 'rbovirt'
 
 module OVIRT::RSpec end

@@ -133,10 +133,10 @@ module OVIRT
     end
 
     def http_headers(headers ={})
-      headers.merge({
+      filter_header.merge(auth_header).merge({
         :content_type => 'application/xml',
         :accept => 'application/xml',
-      }).merge(auth_header).merge(filter_header)
+      }).merge(headers)
     end
 
     def handle_fault(f)
