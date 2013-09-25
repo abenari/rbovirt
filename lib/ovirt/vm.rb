@@ -74,17 +74,18 @@ module OVIRT
                topology( :cores => (opts[:cores] || '1'), :sockets => '1' )
              }
           end
-          if(opts[:first_boot_dev] && opts[:first_boot_dev] == 'network')
-            os{
+          os({:type => opts[:os_type] || 'unassigned' }){
+            if(opts[:first_boot_dev] && opts[:first_boot_dev] == 'network')
               boot(:dev=> opts[:boot_dev1] || 'network')
               boot(:dev=> opts[:boot_dev2] || 'hd')
-            }
-          else
-            os{
+            else
               boot(:dev=> opts[:boot_dev2] || 'hd')
               boot(:dev=> opts[:boot_dev1] || 'network')
-            }
-          end
+            end
+            kernel (opts[:os_kernel])
+            initrd (opts[:os_initrd])
+            cmdline (opts[:os_cmdline])
+          }
           display_{
             type_(opts[:display][:type])
           } if opts[:display]
