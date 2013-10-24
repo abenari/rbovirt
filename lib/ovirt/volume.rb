@@ -21,7 +21,9 @@ module OVIRT
           interface_(opts[:interface] || 'virtio')
           format_(opts[:format] || 'cow')
           sparse_(opts[:sparse] || 'true')
-	  quota_( :id => opts[:quota])
+          if opts[:quota]
+            quota_( :id => opts[:quota])
+          end
         }
       end
       Nokogiri::XML(builder.to_xml).root.to_s
