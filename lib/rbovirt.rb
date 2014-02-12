@@ -9,6 +9,7 @@ require "ovirt/volume"
 require "ovirt/interface"
 require "ovirt/network"
 require "ovirt/quota"
+require "ovirt/version"
 
 require "client/vm_api"
 require "client/template_api"
