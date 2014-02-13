@@ -31,7 +31,7 @@ module OVIRT
         end
       end
 
-      opts[:cluster_name] ||= clusters.first.name
+      opts[:cluster_name] ||= clusters.first.name unless opts[:cluster]
       OVIRT::VM::new(self, http_post("/vms",OVIRT::VM.to_xml(opts)).root)
     end
 

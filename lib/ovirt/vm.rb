@@ -23,7 +23,7 @@ module OVIRT
       return false unless @status =~ /down/i
       volumes.each do |volume|
         return false if volume.status =~ /locked/i
-      end if @client.api_version?("3","1") || @client.api_version?("3","2")
+      end
       true
     end
 

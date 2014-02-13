@@ -36,7 +36,7 @@ module OVIRT
     def parse_xml_attributes!(xml)
      @mac = (xml/'mac').first[:address] rescue nil #template interfaces doesn't have MAC address.
      @interface = (xml/'interface').first.text
-     @network = (xml/'network').first[:id]
+     @network = ((xml/'network').first[:id] rescue nil)
      @vm = Link::new(@client, (xml/'vm').first[:id], (xml/'vm').first[:href]) if (xml/'vm') rescue nil
      @template = Link::new(@client, (xml/'template').first[:id], (xml/'template').first[:href]) rescue nil
     end
