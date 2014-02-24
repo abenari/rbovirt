@@ -38,11 +38,32 @@ shared_examples_for "API" do
   end
 end
 
+describe OVIRT, "Https authentication" do
+  context 'authenticate using the server ca certificate' do
+
+    it "test_should_get_ca_certificate" do
+      user, password, url, datacenter = endpoint
+      ::OVIRT::RSpec.ca_cert(url).class.should eql(String)
+    end
+
+    it "should_authenticate_with_ca_certificate" do
+      user, password, url, datacenter = endpoint
+      cert = ::OVIRT::RSpec.ca_cert(url)
+      store = OpenSSL::X509::Store.new().add_cert(
+              OpenSSL::X509::Certificate.new(cert))
+
+       client = ::OVIRT::Client.new(user, password, url, {:ca_cert_store => store})
+       client.api_version.class.should eql(String)
+    end
+  end
+end
+
 describe OVIRT, "Admin API" do
 
   before(:all) do
-    user, password, url = endpoint
-    @client = ::OVIRT::Client.new(user, password, url, nil, nil, false)
+    user, password, url, datacenter = endpoint
+    opts = {:datacenter_id => datacenter, :ca_cert_file =>  "#{File.dirname(__FILE__)}/../ca_cert.pem"}
+    @client = ::OVIRT::Client.new(user, password, url, opts )
   end
 
   after(:all) do
@@ -61,8 +82,9 @@ end
 describe OVIRT, "User API" do
 
   before(:all) do
-    user, password, url = endpoint
-    @client = ::OVIRT::Client.new(user, password, url, nil, nil, support_user_level_api)
+    user, password, url, datacenter = endpoint
+    opts = {:datacenter_id => datacenter, :ca_cert_file => "#{File.dirname(__FILE__)}/../ca_cert.pem", :filtered_api => support_user_level_api}
+    @client = ::OVIRT::Client.new(user, password, url, opts)
   end
 
   after(:all) do

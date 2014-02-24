@@ -1,5 +1,6 @@
 Gemfile.lock
 endpoint.yml
+spec/ca_cert.pem
 
 # rcov generated
 coverage

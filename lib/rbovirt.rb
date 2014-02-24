@@ -21,6 +21,7 @@ require "client/quota_api"
 
 require "nokogiri"
 require "rest_client"
+require "restclient_ext/request"
 
 module OVIRT
 
@@ -38,14 +39,35 @@ module OVIRT
 
   class Client
 
-    attr_reader :credentials, :api_entrypoint, :datacenter_id, :cluster_id, :filtered_api
+    attr_reader :credentials, :api_entrypoint, :datacenter_id, :cluster_id, :filtered_api, :ca_cert_file, :ca_cert_store
 
-    def initialize(username, password, api_entrypoint, datacenter_id=nil, cluster_id=nil, filtered_api = false)
-      @credentials = { :username => username, :password => password }
-      @datacenter_id = datacenter_id
-      @cluster_id = cluster_id
+    # Construct a new ovirt client class.
+    # mandatory parameters
+    #   username, password, api_entrypoint  - for example 'me@internal', 'secret', 'https://example.com/api'
+    # optional parameters
+    #   datacenter_id, cluster_id and filtered_api can be sent in this order for backward
+    #   compatibility, or as a hash in the 4th parameter.
+    #   datacenter_id - setting the datacenter at initialization will add a default scope to any subsequent call
+    #                   to the client to the specified datacenter.
+    #   cluster_id    - setting the cluster at initialization will add a default scope to any subsequent call
+    #                   to the client to the specified cluster.
+    #   filtered_api  - when set to false (default) will use ovirt administrator api, else it will use the user
+    #                   api mode.
+    #
+    def initialize(username, password, api_entrypoint, options={}, backward_compatibility_cluster=nil, backward_compatibility_filtered=nil )
+      if !options.is_a?(Hash)
+        # backward compatibility optional parameters
+        options = {:datacenter_id => options,
+                   :cluster_id => backward_compatibility_cluster,
+                   :filtered_api => backward_compatibility_filtered}
+      end
       @api_entrypoint = api_entrypoint
-      @filtered_api = filtered_api
+      @credentials    = { :username => username, :password => password }
+      @datacenter_id  = options[:datacenter_id]
+      @cluster_id     = options[:cluster_id]
+      @filtered_api   = options[:filtered_api]
+      @ca_cert_file   = options[:ca_cert_file]
+      @ca_cert_store  = options[:ca_cert_store]
     end
 
     def api_version
@@ -79,7 +101,7 @@ module OVIRT
 
     def http_get(suburl, headers={})
       begin
-        Nokogiri::XML(RestClient::Resource.new(@api_entrypoint)[suburl].get(http_headers(headers)))
+        Nokogiri::XML(rest_client(suburl).get(http_headers(headers)))
       rescue
         handle_fault $!
       end
@@ -87,7 +109,7 @@ module OVIRT
 
     def http_post(suburl, body, headers={})
       begin
-        Nokogiri::XML(RestClient::Resource.new(@api_entrypoint)[suburl].post(body, http_headers(headers)))
+        Nokogiri::XML(rest_client(suburl).post(body, http_headers(headers)))
       rescue
         handle_fault $!
       end
@@ -95,7 +117,7 @@ module OVIRT
 
     def http_put(suburl, body, headers={})
       begin
-        Nokogiri::XML(RestClient::Resource.new(@api_entrypoint)[suburl].put(body, http_headers(headers)))
+        Nokogiri::XML(rest_client(suburl).put(body, http_headers(headers)))
       rescue
         handle_fault $!
       end
@@ -104,7 +126,7 @@ module OVIRT
     def http_delete(suburl)
       begin
         headers = {:accept => 'application/xml'}.merge(auth_header).merge(filter_header)
-        Nokogiri::XML(RestClient::Resource.new(@api_entrypoint)[suburl].delete(headers))
+        Nokogiri::XML(rest_client(suburl).delete(headers))
       rescue
         handle_fault $!
       end
@@ -114,6 +136,15 @@ module OVIRT
       # This is the method for strict_encode64:
       encoded_credentials = ["#{@credentials[:username]}:#{@credentials[:password]}"].pack("m0").gsub(/\n/,'')
       { :authorization => "Basic " + encoded_credentials }
+    end
+
+    def rest_client(suburl)
+      if (URI.parse(@api_entrypoint)).scheme == 'https'
+        verify_options = {:verify_ssl  => OpenSSL::SSL::VERIFY_PEER}
+        verify_options[:ssl_cert_store] = ca_cert_store if ca_cert_store
+        verify_options[:ssl_ca_file]    = ca_cert_file if ca_cert_file
+      end
+      RestClient::Resource.new(@api_entrypoint, verify_options)[suburl]
     end
 
     def filter_header

@@ -1,5 +1,4 @@
 
 user: "admin@internal"
 password: "secret"
-hostname: "ovirt.example.com"
-port: ""
+url: "http://ovirt.example.com/api"

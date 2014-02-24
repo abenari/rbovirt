@@ -3,12 +3,12 @@ require "#{File.dirname(__FILE__)}/../spec_helper"
 shared_examples_for "Basic VM Life cycle" do
 
   before(:all) do
-    @blank_template_id =  "00000000-0000-0000-0000-000000000000"
-    @cluster = @client.clusters.first.id
+    @cluster = @client.clusters.last.id
+    @template_id = "00000000-0000-0000-0000-000000000000"
     name = 'vm-'+Time.now.to_i.to_s
-    @vm = @client.create_vm(:name => name, :template => @blank_template_id, :cluster => @cluster)
+    @vm = @client.create_vm(:name => name, :template => @template_id, :cluster => @cluster)
     @client.add_volume(@vm.id)
-    @client.add_interface(@vm.id)
+    @client.add_interface(@vm.id, :network_name => 'rhevm')
     while !@client.vm(@vm.id).ready? do
     end
   end
@@ -71,8 +71,9 @@ end
 describe "Admin API VM Life cycle" do
 
   before(:all) do
-    user, password, url = endpoint
-    @client = ::OVIRT::Client.new(user, password, url, nil, nil, false)
+    user, password, url, datacenter = endpoint
+    opts = {:datacenter_id => datacenter, :ca_cert_file =>  "#{File.dirname(__FILE__)}/../ca_cert.pem"}
+    @client = ::OVIRT::Client.new(user, password, url, opts)
   end
 
   context 'admin basic vm and templates operations' do
@@ -83,8 +84,11 @@ end
 describe "User API VM Life cycle" do
 
   before(:all) do
-    user, password, url = endpoint
-    @client = ::OVIRT::Client.new(user, password, url, nil, nil, support_user_level_api)
+    user, password, url, datacenter = endpoint
+    opts = {:datacenter_id => datacenter,
+            :ca_cert_file =>  "#{File.dirname(__FILE__)}/../ca_cert.pem",
+            :filtered_api => support_user_level_api}
+    @client = ::OVIRT::Client.new(user, password, url, opts)
   end
 
   context 'user basic vm and templates operations' do
