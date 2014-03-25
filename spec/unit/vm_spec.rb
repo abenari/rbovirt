@@ -245,6 +245,8 @@ END_HEREDOC
       interface.name.should eql('nic1')
       interface.mac.should eql('00:11:22:33:44:55')
       interface.interface.should eql('virtio')
+      interface.plugged.should eql('true')
+      interface.linked.should eql('true')
     end
 
     it "should have one volume" do

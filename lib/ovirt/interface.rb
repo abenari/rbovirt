@@ -1,13 +1,16 @@
 module OVIRT
 
   class Interface < BaseObject
-    attr_reader :name, :mac, :interface, :network, :vm
+    attr_reader :name, :mac, :interface, :network, :vm, :plugged, :linked
 
     def initialize(client=nil, xml={})
       if xml.is_a?(Hash)
         super(client, xml[:id], xml[:href], xml[:name])
         @network = xml[:network]
         @persisted = xml[:persisted]
+        @interface = xml[:interface]
+        @plugged = xml[:plugged]
+        @linked = xml[:linked]
       else
         super(client, xml[:id], xml[:href], (xml/'name').first.text)
         parse_xml_attributes!(xml)
@@ -24,6 +27,9 @@ module OVIRT
           else
             network{ name_(opts[:network_name] || 'ovirtmgmt') }
           end
+          interface_(opts[:interface]) if opts[:interface]
+          plugged_(opts[:plugged]) if opts[:plugged]
+          linked_(opts[:linked]) if opts[:linked]
         }
       end
       Nokogiri::XML(builder.to_xml).root.to_s
@@ -37,6 +43,8 @@ module OVIRT
      @mac = (xml/'mac').first[:address] rescue nil #template interfaces doesn't have MAC address.
      @interface = (xml/'interface').first.text
      @network = ((xml/'network').first[:id] rescue nil)
+     @plugged = (xml/'plugged').first.text
+     @linked = (xml/'linked').first.text
      @vm = Link::new(@client, (xml/'vm').first[:id], (xml/'vm').first[:href]) if (xml/'vm') rescue nil
      @template = Link::new(@client, (xml/'template').first[:id], (xml/'template').first[:href]) rescue nil
     end
