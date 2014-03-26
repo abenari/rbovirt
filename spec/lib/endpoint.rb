@@ -1,3 +1,4 @@
+require 'yaml'
 module OVIRT::RSpec::Endpoint
 
   def endpoint
