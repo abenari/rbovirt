@@ -172,7 +172,7 @@ module OVIRT
     end
 
     def handle_fault(f)
-      if f.is_a?(RestClient::BadRequest)
+      if f.is_a?(RestClient::BadRequest) || f.is_a?(RestClient::Conflict)
         fault = (Nokogiri::XML(f.http_body)/'//fault/detail')
         fault = fault.text.gsub(/\[|\]/, '') if fault
       end
