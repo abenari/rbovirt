@@ -2,13 +2,19 @@ require 'yaml'
 module OVIRT::RSpec::Endpoint
 
   def endpoint
-    file = File.expand_path("../endpoint.yml", File.dirname(__FILE__))
-    @endpoint ||= YAML.load(File.read(file))
-    return  @endpoint['user'], @endpoint['password'], @endpoint['url'] , @endpoint['datacenter']
+    return  config['user'], config['password'], config['url'] , config['datacenter']
+  end
+
+  def network_name
+    config['network'] || 'ovirtmgmt'
   end
 
   def support_user_level_api
-    @endpoint['version'] && @endpoint['version'] > 3.1
+    config['version'] && config['version'] > 3.1
+  end
+
+  def config
+    @config ||= YAML.load(File.read(File.expand_path("../endpoint.yml", File.dirname(__FILE__))))
   end
 
 end

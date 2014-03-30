@@ -8,7 +8,7 @@ shared_examples_for "Basic VM Life cycle" do
     name = 'vm-'+Time.now.to_i.to_s
     @vm = @client.create_vm(:name => name, :template => @template_id, :cluster => @cluster)
     @client.add_volume(@vm.id)
-    @client.add_interface(@vm.id, :network_name => 'rhevm')
+    @client.add_interface(@vm.id, :network_name => network_name)
     while !@client.vm(@vm.id).ready? do
     end
   end
