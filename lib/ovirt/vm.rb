@@ -50,9 +50,9 @@ module OVIRT
       builder = Nokogiri::XML::Builder.new do
         vm{
           name_ opts[:name] || "i-#{Time.now.to_i}"
-          if opts[:template]
+          if opts[:template] && !opts[:template].empty?
             template_ :id => (opts[:template])
-          elsif opts[:template_name]
+          elsif opts[:template_name] && !opts[:template_name].empty?
             template_{ name_(opts[:template_name])}
           else
             template_{name_('Blank')}
