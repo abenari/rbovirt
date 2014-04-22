@@ -43,8 +43,8 @@ module OVIRT
      @mac = (xml/'mac').first[:address] rescue nil #template interfaces doesn't have MAC address.
      @interface = (xml/'interface').first.text
      @network = ((xml/'network').first[:id] rescue nil)
-     @plugged = (xml/'plugged').first.text
-     @linked = (xml/'linked').first.text
+     @plugged = (xml/'plugged').first.text if (xml/'plugged').first
+     @linked = (xml/'linked').first.text if (xml/'linked').first
      @vm = Link::new(@client, (xml/'vm').first[:id], (xml/'vm').first[:href]) if (xml/'vm') rescue nil
      @template = Link::new(@client, (xml/'template').first[:id], (xml/'template').first[:href]) rescue nil
     end
