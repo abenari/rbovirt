@@ -1,4 +1,4 @@
-require 'rspec'
+require 'rspec/core'
 require 'rspec/mocks'
 require 'rbovirt'
 
