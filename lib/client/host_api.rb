@@ -12,5 +12,16 @@ module OVIRT
         OVIRT::Host::new(self, h)
       end
     end
+
+    def approve_host(host_id, opts={})
+        http_post("/hosts/%s/approve" % host_id, "<action></action>")
+    end
+
+    def reinstall_host(host_id, opts={})
+        http_post("/hosts/%s/install" % host_id,
+                  "<action><ssh>
+                   <authentication_method>PublicKey</authentication_method>
+                   </ssh></action>")
+    end
   end
 end
