@@ -39,7 +39,7 @@ module OVIRT
 
   class Client
 
-    attr_reader :credentials, :api_entrypoint, :datacenter_id, :cluster_id, :filtered_api, :ca_cert_file, :ca_cert_store
+    attr_reader :credentials, :api_entrypoint, :datacenter_id, :cluster_id, :filtered_api, :ca_cert_file, :ca_cert_store, :ca_no_verify
 
     # Construct a new ovirt client class.
     # mandatory parameters
@@ -68,6 +68,7 @@ module OVIRT
       @filtered_api   = options[:filtered_api]
       @ca_cert_file   = options[:ca_cert_file]
       @ca_cert_store  = options[:ca_cert_store]
+      @ca_no_verify   = options[:ca_no_verify]
     end
 
     def api_version
@@ -101,7 +102,9 @@ module OVIRT
 
     def http_get(suburl, headers={})
       begin
-        Nokogiri::XML(rest_client(suburl).get(http_headers(headers)))
+        res = rest_client(suburl).get(http_headers(headers))
+        puts "#{res}\n" if ENV['RBOVIRT_LOG_RESPONSE']
+        Nokogiri::XML(res)
       rescue
         handle_fault $!
       end
@@ -109,7 +112,9 @@ module OVIRT
 
     def http_post(suburl, body, headers={})
       begin
-        Nokogiri::XML(rest_client(suburl).post(body, http_headers(headers)))
+        res = rest_client(suburl).post(body, http_headers(headers))
+        puts "#{res}\n" if ENV['RBOVIRT_LOG_RESPONSE']
+        Nokogiri::XML(res)
       rescue
         handle_fault $!
       end
@@ -117,7 +122,9 @@ module OVIRT
 
     def http_put(suburl, body, headers={})
       begin
-        Nokogiri::XML(rest_client(suburl).put(body, http_headers(headers)))
+        res = rest_client(suburl).put(body, http_headers(headers))
+        puts "#{res}\n" if ENV['RBOVIRT_LOG_RESPONSE']
+        Nokogiri::XML(res)
       rescue
         handle_fault $!
       end
@@ -126,7 +133,9 @@ module OVIRT
     def http_delete(suburl)
       begin
         headers = {:accept => 'application/xml'}.merge(auth_header).merge(filter_header)
-        Nokogiri::XML(rest_client(suburl).delete(headers))
+        res = rest_client(suburl).delete(headers)
+        puts "#{res}\n" if ENV['RBOVIRT_LOG_RESPONSE']
+        Nokogiri::XML(res)
       rescue
         handle_fault $!
       end
@@ -140,9 +149,10 @@ module OVIRT
 
     def rest_client(suburl)
       if (URI.parse(@api_entrypoint)).scheme == 'https'
-        verify_options = {:verify_ssl  => OpenSSL::SSL::VERIFY_PEER}
+        verify_options = {}
+        verify_options[:verify_ssl] = ca_no_verify ? OpenSSL::SSL::VERIFY_NONE : OpenSSL::SSL::VERIFY_PEER
         verify_options[:ssl_cert_store] = ca_cert_store if ca_cert_store
-        verify_options[:ssl_ca_file]    = ca_cert_file if ca_cert_file
+        verify_options[:ssl_ca_file] = ca_cert_file if ca_cert_file
       end
       RestClient::Resource.new(@api_entrypoint, verify_options)[suburl]
     end

@@ -13,9 +13,24 @@ A Ruby client for oVirt.
 * Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
 
 == Running the tests
+
 * Copy the file spec/endpoint.yml.example to spec/endpoint.yml
 * Edit the endpoint properties (user, password and host name)
+* `wget --no-check-certificate -O spec/ca_cert.pem https://host/ca.crt`
 * From command line run => rake spec
+
+RHEV/oVirt can be installed with all-in-one setup, but host certificate must be self-signed otherwise one test will fail.
+
+== Logging
+
+If you want to see API requests and responses, use the following environment variables:
+
+    RESTCLIENT_LOG=stdout RBOVIRT_LOG_RESPONSE=1 rake spec
+
+== TODO
+
+* Auto download of ca.crt for all tests
+* Pry integration
 
 == Copyright
 
