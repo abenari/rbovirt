@@ -43,12 +43,12 @@ describe OVIRT, "Https authentication" do
 
     it "test_should_get_ca_certificate" do
       user, password, url, datacenter = endpoint
-      ::OVIRT::RSpec.ca_cert(url).class.should eql(String)
+      ca_cert(url).class.should eql(String)
     end
 
     it "should_authenticate_with_ca_certificate" do
       user, password, url, datacenter = endpoint
-      cert = ::OVIRT::RSpec.ca_cert(url)
+      cert = ca_cert(url)
       store = OpenSSL::X509::Store.new().add_cert(
               OpenSSL::X509::Certificate.new(cert))
 
@@ -61,9 +61,7 @@ end
 describe OVIRT, "Admin API" do
 
   before(:all) do
-    user, password, url, datacenter = endpoint
-    opts = {:datacenter_id => datacenter, :ca_cert_file =>  "#{File.dirname(__FILE__)}/../ca_cert.pem"}
-    @client = ::OVIRT::Client.new(user, password, url, opts )
+    setup_client
   end
 
   after(:all) do
@@ -82,9 +80,7 @@ end
 describe OVIRT, "User API" do
 
   before(:all) do
-    user, password, url, datacenter = endpoint
-    opts = {:datacenter_id => datacenter, :ca_cert_file => "#{File.dirname(__FILE__)}/../ca_cert.pem", :filtered_api => support_user_level_api}
-    @client = ::OVIRT::Client.new(user, password, url, opts)
+    setup_client :filtered_api => support_user_level_api
   end
 
   after(:all) do

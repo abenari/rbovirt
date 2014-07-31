@@ -3,9 +3,9 @@ require "#{File.dirname(__FILE__)}/../spec_helper"
 shared_examples_for "Basic VM Life cycle" do
 
   before(:all) do
-    @cluster = @client.clusters.last.id
-    @template_id = "00000000-0000-0000-0000-000000000000"
     name = 'vm-'+Time.now.to_i.to_s
+    @cluster = @client.clusters.select{|c| c.name == cluster_name}.first.id
+    @template_id = "00000000-0000-0000-0000-000000000000"
     @vm = @client.create_vm(:name => name, :template => @template_id, :cluster => @cluster)
     @client.add_volume(@vm.id)
     @client.add_interface(@vm.id, :network_name => network_name)
@@ -56,7 +56,7 @@ shared_examples_for "Basic VM Life cycle" do
   end
 
   it "test_should_update_vm" do
-    name = 'u-'+Time.now.to_i.to_s
+    name = 'vmu-'+Time.now.to_i.to_s
     @client.update_vm(:id => @vm.id, :name=> name, :cluster => @cluster)
   end
 
@@ -68,12 +68,43 @@ shared_examples_for "Basic VM Life cycle" do
   end
 end
 
+shared_examples_for "VM Life cycle without template" do
+
+  before(:all) do
+    name = 'vm-'+Time.now.to_i.to_s
+    @cluster = @client.clusters.select{|c| c.name == cluster_name}.first.id
+    @vm = @client.create_vm(:name => name, :cluster => @cluster)
+    @client.add_volume(@vm.id)
+    @client.add_interface(@vm.id, :network_name => network_name)
+    while !@client.vm(@vm.id).ready? do
+    end
+  end
+
+  after(:all) do
+    @client.destroy_vm(@vm.id)
+  end
+
+  it "test_should_return_a_vm" do
+    @client.vm(@vm.id).id.should eql(@vm.id)
+  end
+
+  it "test_should_update_vm" do
+    name = 'vmu-'+Time.now.to_i.to_s
+    @client.update_vm(:id => @vm.id, :name=> name, :cluster => @cluster)
+  end
+
+  it "test_should_start_and_stop_vm" do
+    @client.vm_action(@vm.id, :start)
+    while !@client.vm(@vm.id).running? do
+    end
+    @client.vm_action(@vm.id, :shutdown)
+  end
+end
+
 describe "Admin API VM Life cycle" do
 
   before(:all) do
-    user, password, url, datacenter = endpoint
-    opts = {:datacenter_id => datacenter, :ca_cert_file =>  "#{File.dirname(__FILE__)}/../ca_cert.pem"}
-    @client = ::OVIRT::Client.new(user, password, url, opts)
+    setup_client
   end
 
   context 'admin basic vm and templates operations' do
@@ -81,14 +112,21 @@ describe "Admin API VM Life cycle" do
   end
 end
 
+describe "Admin API VM Life cycle without any template" do
+
+  before(:all) do
+    setup_client
+  end
+
+  context 'admin basic vm and templates operations' do
+    it_behaves_like "VM Life cycle without template"
+  end
+end
+
 describe "User API VM Life cycle" do
 
   before(:all) do
-    user, password, url, datacenter = endpoint
-    opts = {:datacenter_id => datacenter,
-            :ca_cert_file =>  "#{File.dirname(__FILE__)}/../ca_cert.pem",
-            :filtered_api => support_user_level_api}
-    @client = ::OVIRT::Client.new(user, password, url, opts)
+    setup_client :filtered_api => support_user_level_api
   end
 
   context 'user basic vm and templates operations' do

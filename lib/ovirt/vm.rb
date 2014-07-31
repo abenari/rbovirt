@@ -74,18 +74,21 @@ module OVIRT
                topology( :cores => (opts[:cores] || '1'), :sockets => '1' )
              }
           end
-          os({:type => opts[:os_type] || 'unassigned' }){
-            if(opts[:first_boot_dev] && opts[:first_boot_dev] == 'network')
-              boot(:dev=> opts[:boot_dev1] || 'network')
-              boot(:dev=> opts[:boot_dev2] || 'hd')
-            else
-              boot(:dev=> opts[:boot_dev2] || 'hd')
-              boot(:dev=> opts[:boot_dev1] || 'network')
-            end
-            kernel (opts[:os_kernel])
-            initrd (opts[:os_initrd])
-            cmdline (opts[:os_cmdline])
-          }
+          # os element must not be sent when template is present (RHBZ 1104235)
+          if opts[:template].nil? || opts[:template].empty?
+            os({:type => opts[:os_type] || 'unassigned' }){
+              if(opts[:first_boot_dev] && opts[:first_boot_dev] == 'network')
+                boot(:dev=> opts[:boot_dev1] || 'network')
+                boot(:dev=> opts[:boot_dev2] || 'hd')
+              else
+                boot(:dev=> opts[:boot_dev2] || 'hd')
+                boot(:dev=> opts[:boot_dev1] || 'network')
+              end
+              kernel (opts[:os_kernel])
+              initrd (opts[:os_initrd])
+              cmdline (opts[:os_cmdline])
+            }
+          end
           display_{
             type_(opts[:display][:type])
           } if opts[:display]
