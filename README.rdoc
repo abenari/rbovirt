@@ -16,14 +16,18 @@ A Ruby client for oVirt.
 
 * Copy the file spec/endpoint.yml.example to spec/endpoint.yml
 * Edit the endpoint properties (user, password and host name)
-* `wget --no-check-certificate -O spec/ca_cert.pem https://host/ca.crt`
 * From command line run => rake spec
 
-RHEV/oVirt can be installed with all-in-one setup, but host certificate must be self-signed otherwise one test will fail.
+RHEV/oVirt can be installed with all-in-one setup, but host certificate must be
+self-signed otherwise one test will fail.
+
+Also note that oVirt must be configured with correct certificate (hostname must
+match, must be valid and oVirt must return correct CA under /ca.crt URL).
 
 == Logging
 
-If you want to see API requests and responses, use the following environment variables:
+If you want to see API requests and responses, use the following environment
+variables:
 
     RESTCLIENT_LOG=stdout RBOVIRT_LOG_RESPONSE=1 rake spec
 

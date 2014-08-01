@@ -19,9 +19,9 @@ module OVIRT::RSpec
 
   def setup_client(options = {})
     user, password, url, datacenter = endpoint
-    opts = {
-      :ca_cert_file => "#{File.dirname(__FILE__)}/ca_cert.pem"
-    }
+    cert = ca_cert(url)
+    store = OpenSSL::X509::Store.new().add_cert(OpenSSL::X509::Certificate.new(cert))
+    opts = { :ca_cert_store => store }
     @client = ::OVIRT::Client.new(user, password, url, opts)
     datacenter_id = @client.datacenters.find{|x| x.name == datacenter}.id rescue raise("Cannot find datacenter #{datacenter}")
     opts.merge!(:datacenter_id => datacenter_id)
