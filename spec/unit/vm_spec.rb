@@ -171,7 +171,7 @@ END_HEREDOC
 
     before(:each) do
       @mock_client = double("mock_client")
-      allow(@mock_client).to receive(:vm_interfaces) do
+      @mock_client.stub(:vm_interfaces) do
         xml = <<END_HEREDOC
 <nic href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/nics/12345678-1234-1234-1234-123456789012" id="12345678-1234-1234-1234-123456789012">
 <actions>
@@ -190,7 +190,7 @@ END_HEREDOC
 END_HEREDOC
         [OVIRT::Interface::new(nil, Nokogiri::XML(xml).xpath('/').first)]
       end
-      allow(@mock_client).to receive(:vm_volumes) do
+      @mock_client.stub(:vm_volumes) do
         xml = <<END_HEREDOC
 <disk href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/nics/12345678-1234-1234-1234-123456789012" id="12345678-1234-1234-1234-123456789012">
 <actions>
