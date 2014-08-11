@@ -58,6 +58,28 @@ describe OVIRT, "Https authentication" do
   end
 end
 
+describe OVIRT, "Persistent authentication" do
+  context 'use persistent authentication' do
+
+    it "test_request_with_persistent_authentication" do
+      user, password, url, datacenter = endpoint
+      cert = ca_cert(url)
+      store = OpenSSL::X509::Store.new().add_cert(
+              OpenSSL::X509::Certificate.new(cert))
+
+      client = ::OVIRT::Client.new(user, password, url, {:ca_cert_store => store, :persistent_auth => true})
+      client.api_version.class.should eql(String)
+      client.persistent_auth.should eql(true)
+      client.jsessionid.should_not be_nil
+
+      # When performing a new request the jsessionid should remain the same
+      orig_jsession_id = client.jsessionid
+      client.datacenters.class.should eql(Array)
+      client.jsessionid.should eql(orig_jsession_id)
+    end
+  end
+end
+
 describe OVIRT, "Admin API" do
 
   before(:all) do
