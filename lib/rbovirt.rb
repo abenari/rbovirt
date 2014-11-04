@@ -23,7 +23,6 @@ require "client/disk_api"
 
 require "nokogiri"
 require "rest_client"
-require "restclient_ext/request"
 require "restclient_ext/resource"
 
 module OVIRT
