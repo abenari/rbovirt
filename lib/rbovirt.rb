@@ -19,6 +19,7 @@ require "client/host_api"
 require "client/datacenter_api"
 require "client/storage_domain_api"
 require "client/quota_api"
+require "client/disk_profile_api"
 
 require "nokogiri"
 require "rest_client"

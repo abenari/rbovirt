@@ -14,19 +14,6 @@ module OVIRT
         (opts[:role].nil? || storage_domain.role == opts[:role]) ? storage_domain : nil
       end.compact
     end
-    
-    def diskprofile(dp)
-      http_get("/storagedomains/%s/diskprofiles" % sd_id).collect
-      disk_profile = OVIRT::DiskProfile::new(self, dp.root)
-    end
-    
-    def diskprofiles(opts={})
-      path = "/diskprofiles"
-      path += search_url(opts) unless filtered_api
-      http_get(path).xpath('/diskprofiles').collect do |dp|
-        disk_profile = OVIRT::DiskProfile::new(self,dp)
-      end.compact
   end
-end
 end
 
