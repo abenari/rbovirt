@@ -18,7 +18,7 @@ module OVIRT
           size_(opts[:size] || 8589934592)
           type_(opts[:type] || 'data')
           bootable_(opts[:bootable] || 'true')
-          disk_profile_(:id => opts[:disk_profile] || 0)
+          disk_profile_(:id => opts[:disk_profile] || nil)
           interface_(opts[:interface] || 'virtio')
           format_(opts[:format] || 'cow')
           sparse_(opts[:sparse] || 'true')

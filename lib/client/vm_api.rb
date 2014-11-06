@@ -61,7 +61,6 @@ module OVIRT
     def vm_volumes vm_id
       begin
         volumes = http_get("/vms/%s/disks" % vm_id, http_headers).xpath('/disks/disk').collect do |disk|
-          puts disk
           OVIRT::Volume::new(self, disk)
         end
       rescue => e # Catch case were vm_id is destroyed.
