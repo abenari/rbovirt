@@ -1,7 +1,7 @@
 module OVIRT
 
   class Volume < BaseObject
-    attr_reader :size, :disk_type, :bootable, :interface, :format, :sparse, :status, :storage_domain, :vm, :quota 
+    attr_reader :size, :disk_type, :bootable, :interface, :format, :sparse, :status, :storage_domain, :vm, :quota, :disk_profile
 
     def initialize(client, xml)
       super(client, xml[:id], xml[:href], (xml/'name').first.text)
@@ -18,6 +18,7 @@ module OVIRT
           size_(opts[:size] || 8589934592)
           type_(opts[:type] || 'data')
           bootable_(opts[:bootable] || 'true')
+          disk_profile_(:id => opts[:disk_profile] || 0)
           interface_(opts[:interface] || 'virtio')
           format_(opts[:format] || 'cow')
           sparse_(opts[:sparse] || 'true')
@@ -36,8 +37,10 @@ module OVIRT
      @bootable = (xml/'bootable').first.text
      @interface = (xml/'interface').first.text
      @format = ((xml/'format').first.text rescue nil)
+     @format = ((xml/'format').first.text rescue nil)
      @sparse = ((xml/'sparse').first.text rescue nil)
      @status = ((xml/'status').first.text rescue nil)
+     @disk_profile = Link::new(@client, (xml/'disk_profile').first[:id], (xml/'disk_profile').first[:href]) rescue nil
      @status ||= ((xml/'status/state').first.text rescue nil)
      @vm = Link::new(@client, (xml/'vm').first[:id], (xml/'vm').first[:href]) rescue nil
      @quota = ((xml/'quota').first[:id] rescue nil)

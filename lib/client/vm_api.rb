@@ -61,6 +61,7 @@ module OVIRT
     def vm_volumes vm_id
       begin
         volumes = http_get("/vms/%s/disks" % vm_id, http_headers).xpath('/disks/disk').collect do |disk|
+          puts disk
           OVIRT::Volume::new(self, disk)
         end
       rescue => e # Catch case were vm_id is destroyed.
@@ -74,6 +75,7 @@ module OVIRT
     def add_volume(vm_id, opts={})
       search = opts[:search] || ("datacenter=%s" % current_datacenter.name)
       storage_domain_id = opts[:storage_domain] || storagedomains(:role => 'data', :search => search).first.id
+      puts OVIRT::Volume.to_xml(storage_domain_id, opts)
       http_post("/vms/%s/disks" % vm_id, OVIRT::Volume.to_xml(storage_domain_id, opts))
     end
 
