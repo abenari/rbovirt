@@ -12,5 +12,11 @@ module OVIRT
     def parse_version xml
       (xml/'version').first[:major] +"."+ (xml/'version').first[:minor]
     end
+
+    def parse_bool text
+      return true if text =~ /^true$/i
+      return false if text =~ /^false$/i
+      raise ArgumentError.new %Q[The string "#{text}" isn't a valid boolean, it should be "true" or "false"]
+    end
   end
 end
