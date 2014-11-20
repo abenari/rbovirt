@@ -9,18 +9,32 @@ module OVIRT
       self
     end
 
-    def self.to_xml(storage_domain_id,opts={})
+    def self.to_xml(opts={})
        builder = Nokogiri::XML::Builder.new do
         disk_{
-          storage_domains_{
-            storage_domain_(:id => storage_domain_id)
-          }
-          size_(opts[:size] || 8589934592)
-          type_(opts[:type] || 'data')
-          bootable_(opts[:bootable] || 'true')
-          interface_(opts[:interface] || 'virtio')
-          format_(opts[:format] || 'cow')
-          sparse_(opts[:sparse] || 'true')
+          if opts[:storage_domain_id]
+            storage_domains_{
+              storage_domain_(:id => opts[:storage_domain_id])
+            }
+          end
+          if opts[:size]
+            size_(opts[:size])
+          end
+          if opts[:type]
+            type_(opts[:type])
+          end
+          if opts[:bootable]
+            bootable_(opts[:bootable])
+          end
+          if opts[:interface]
+            interface_(opts[:interface])
+          end
+          if opts[:format]
+            format_(opts[:format])
+          end
+          if opts[:sparse]
+            sparse_(opts[:sparse])
+          end
           if opts[:quota]
             quota_( :id => opts[:quota])
           end
