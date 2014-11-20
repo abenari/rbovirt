@@ -88,6 +88,10 @@ module OVIRT
       http_delete("/vms/%s/disks/%s" % [vm_id, vol_id])
     end
 
+    def update_volume(vm_id, vol_id, opts={})
+      http_put("/vms/%s/disks/%s" % [vm_id, vol_id], OVIRT::Volume.to_xml(opts))
+    end
+
     def vm_action(id, action, opts={})
       xml_response = http_post("/vms/%s/%s" % [id, action],'<action/>', opts)
       return (xml_response/'action/status').first.text.strip.upcase=="COMPLETE"
