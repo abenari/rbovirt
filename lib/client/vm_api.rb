@@ -73,12 +73,23 @@ module OVIRT
 
     def add_volume(vm_id, opts={})
       search = opts[:search] || ("datacenter=%s" % current_datacenter.name)
-      storage_domain_id = opts[:storage_domain] || storagedomains(:role => 'data', :search => search).first.id
-      http_post("/vms/%s/disks" % vm_id, OVIRT::Volume.to_xml(storage_domain_id, opts))
+      opts[:storage_domain_id] = opts[:storage_domain] || storagedomains(:role => 'data', :search => search).first.id
+      # If no size is given, default to a volume size of 8GB
+      opts[:size] = 8 * 1024 * 1024 * 1024 unless opts[:size]
+      opts[:type] = 'data' unless opts[:type]
+      opts[:bootable] = 'true' unless opts[:bootable]
+      opts[:interface] = 'virtio' unless opts[:interface]
+      opts[:format] = 'cow' unless opts[:format]
+      opts[:sparse] = 'true' unless opts[:sparse]
+      http_post("/vms/%s/disks" % vm_id, OVIRT::Volume.to_xml(opts))
     end
 
     def destroy_volume(vm_id, vol_id)
       http_delete("/vms/%s/disks/%s" % [vm_id, vol_id])
+    end
+
+    def update_volume(vm_id, vol_id, opts={})
+      http_put("/vms/%s/disks/%s" % [vm_id, vol_id], OVIRT::Volume.to_xml(opts))
     end
 
     def vm_action(id, action, opts={})

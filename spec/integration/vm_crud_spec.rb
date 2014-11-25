@@ -66,6 +66,13 @@ shared_examples_for "Basic VM Life cycle" do
     vm.class.to_s.should eql("OVIRT::VM")
     @client.destroy_vm(vm.id)
   end
+
+  it "test_should_update_volume" do
+    @client.update_volume(@vm.id, @vm.volumes.first.id, :size => 10737418240)
+    while @client.vm(@vm.id).volumes.first.status != 'ok' do
+    end
+    @client.vm(@vm.id).volumes.first.size.should eql("10737418240")
+  end
 end
 
 shared_examples_for "VM Life cycle without template" do
