@@ -1,0 +1,18 @@
+== Changes
+
+This document describes the relevant changes beween releases of the
+_rbovirt_ project.
+
+Note that this list of changes was added with the 0.0.30 release,
+previous releases aren't described here.
+
+== 0.0.30 / 2014-11-25
+
+New features:
+
+* Added support for updating disks.
+* Added support for the data center +local+ attribute.
+
+Bug fixes:
+
+* Parse correctly the +status+ element.
