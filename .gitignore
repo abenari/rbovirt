@@ -54,3 +54,6 @@ pkg
 
 # For rubinius:
 #*.rbc
+
+# Ignore generated .gem files:
+*.gem
