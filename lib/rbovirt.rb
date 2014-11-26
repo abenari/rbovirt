@@ -149,12 +149,13 @@ module OVIRT
 
     def rest_client(suburl)
       if (URI.parse(@api_entrypoint)).scheme == 'https'
-        verify_options = {}
-        verify_options[:verify_ssl] = ca_no_verify ? OpenSSL::SSL::VERIFY_NONE : OpenSSL::SSL::VERIFY_PEER
-        verify_options[:ssl_cert_store] = ca_cert_store if ca_cert_store
-        verify_options[:ssl_ca_file] = ca_cert_file if ca_cert_file
+        options = {}
+        options[:verify_ssl] = ca_no_verify ? OpenSSL::SSL::VERIFY_NONE : OpenSSL::SSL::VERIFY_PEER
+        options[:ssl_cert_store] = ca_cert_store if ca_cert_store
+        options[:ssl_ca_file] = ca_cert_file if ca_cert_file
       end
-      RestClient::Resource.new(@api_entrypoint, verify_options)[suburl]
+      options[:timeout] = ENV['RBOVIRT_REST_TIMEOUT'] if ENV['RBOVIRT_REST_TIMEOUT']
+      RestClient::Resource.new(@api_entrypoint, options)[suburl]
     end
 
     def filter_header
