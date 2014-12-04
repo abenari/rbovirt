@@ -1,6 +1,9 @@
+require 'openssl'
+require 'rbovirt'
 require 'rspec/core'
 require 'rspec/mocks'
-require 'rbovirt'
+require 'socket'
+require 'uri'
 require 'yaml'
 
 module OVIRT::RSpec
@@ -8,13 +11,20 @@ module OVIRT::RSpec
   # get ovirt ca certificate public key
   # * url - ovirt server url
   def ca_cert(url)
-    ca_url = URI.parse(url)
-    ca_url.path = "/ca.crt"
-    http = Net::HTTP.new(ca_url.host, ca_url.port)
-    http.use_ssl = (ca_url.scheme == 'https')
-    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-    request = Net::HTTP::Get.new(ca_url.path)
-    http.request(request).body
+    parsed_url = URI.parse url
+    begin
+      tcp_socket = TCPSocket.open parsed_url.host, parsed_url.port
+      ssl_socket = OpenSSL::SSL::SSLSocket.new tcp_socket
+      ssl_socket.connect
+      ssl_socket.peer_cert_chain.last.to_pem
+    ensure
+      unless ssl_socket.nil?
+        ssl_socket.close
+      end
+      unless tcp_socket.nil?
+        tcp_socket.close
+      end
+    end
   end
 
   def setup_client(options = {})
