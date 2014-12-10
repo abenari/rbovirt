@@ -167,18 +167,18 @@ module OVIRT
                   }
 	        end
                 network_configuration { 
-                  nics {
-                    nic {
-                      unless nicname.nil?
+                  unless nicname.nil?
+                    nics {
+                      nic {
 	                name_ nicname
-                      end
-                      unless ip.nil? || netmask.nil? || gateway.nil?
-                        network { ip(:'address'=> ip , :'netmask'=> netmask, :'gateway'=> gateway ) }
-                        boot_protocol 'STATIC'
-                        on_boot 'true'
-                      end 
-                    }
-                  } 
+                        unless ip.nil? || netmask.nil? || gateway.nil?
+                          network { ip(:'address'=> ip , :'netmask'=> netmask, :'gateway'=> gateway ) }
+                          boot_protocol 'STATIC'
+                          on_boot 'true'
+                        end 
+                      }
+                    } 
+                  end
                   dns { 
                     unless dns.nil? 
                       servers {
