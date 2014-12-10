@@ -108,6 +108,124 @@ module OVIRT
       Nokogiri::XML(builder.to_xml).root.to_s
     end
 
+    def self.cloudinit(opts={})
+      hostname            = opts[:hostname]
+      ip                  = opts[:ip]
+      netmask             = opts[:netmask]
+      dns                 = opts[:dns]
+      gateway             = opts[:gateway]
+      domain              = opts[:domain]
+      nicname             = opts[:nicname]
+      password            = opts[:password]
+      ssh_authorized_keys = opts[:ssh_authorized_keys]
+      fileslist           = opts[:files]
+      runcmd              = opts[:runcmd]
+      unless opts[:phone_home].nil?
+        phone_home = \
+        "phone_home\n" \
+        "  url: #{opts[:phone_home]['url']}\n" \
+        "  post: #{opts[:phone_home]['post']}\n"
+      end
+      cmdlist             = 'runcmd:'
+      unless runcmd.nil?
+        runcmd.each do |cmd|
+          cmdlist = \
+	  "#{cmdlist}\n" \
+          "- #{cmd}\n"
+        end
+      end
+      builder   = Nokogiri::XML::Builder.new do
+        action {
+          vm {
+            initialization {
+              unless runcmd.nil?
+                custom_script cmdlist
+              end
+              unless phone_home.nil?
+                custom_script phone_home
+              end
+              cloud_init {
+                unless hostname.nil?
+                  host { address hostname  }
+                end
+                unless password.nil?
+                  users { 
+                    user {  
+                      user_name 'root'
+                      password password
+                    }
+                  }
+                end
+                unless ssh_authorized_keys.nil?
+                  authorized_keys {
+                    authorized_key {
+                      user { user_name 'root' }
+                      ssh_authorized_keys.each do |sshkey|
+                        key sshkey    
+                      end
+                    }
+                  }
+	        end
+                network_configuration { 
+                  nics {
+                    nic {
+                      unless nicname.nil?
+	                name_ nicname
+                      end
+                      unless ip.nil? || netmask.nil? || gateway.nil?
+                        network { ip(:'address'=> ip , :'netmask'=> netmask, :'gateway'=> gateway ) }
+                        boot_protocol 'STATIC'
+                        on_boot 'true'
+                      end 
+                    }
+                  } 
+                  dns { 
+                    unless dns.nil? 
+                      servers {
+                        dns.each do |dnsentry|
+                          host {  address dnsentry }
+                        end
+                      }
+                    end
+                    unless domain.nil? 
+                      search_domains { host {  address domain }}
+                    end
+                  }
+                }
+              regenerate_ssh_keys 'true'
+              files {
+	        unless runcmd.nil?
+                  file {
+                    name_   'ignored'
+                    content cmdlist
+                    type    'PLAINTEXT'
+                   }
+                end
+	        unless phone_home.nil?
+                  file {
+                    name_   'ignored'
+                    content phone_home
+                    type    'PLAINTEXT'
+                  }
+                end
+                unless fileslist.nil?
+                  fileslist.each do |fileentry|
+                    file {
+                      name_   fileentry['path']
+                      content fileentry['content']
+                      type    'PLAINTEXT'
+                    }
+                  end
+                end
+              }
+             }
+            }
+          }
+        }
+      end
+      Nokogiri::XML(builder.to_xml).root.to_xml
+    end
+
     private
 
     def parse_xml_attributes!(xml)
@@ -149,3 +267,4 @@ module OVIRT
 
   end
 end
+

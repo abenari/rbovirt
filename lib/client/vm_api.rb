@@ -97,6 +97,12 @@ module OVIRT
       return (xml_response/'action/status').first.text.strip.upcase=="COMPLETE"
     end
 
+    def vm_start_with_cloudinit(id, opts={})
+      xml = OVIRT::VM.cloudinit(opts)
+      xml_response = http_post("/vms/%s/%s" % [id, 'start'], xml, {} )
+      return (xml_response/'action/status').first.text.strip.upcase=="COMPLETE"
+    end
+
     def destroy_vm(id)
       http_delete("/vms/%s" % id)
     end

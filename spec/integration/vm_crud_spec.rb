@@ -41,6 +41,15 @@ shared_examples_for "Basic VM Life cycle" do
     @client.vm_action(@vm.id, :shutdown)
   end
 
+  it "test_should_start_with_cloudinit" do
+    hostname = "host-"+Time.now.to_i.to_s
+    user_data={ :hostname => hostname }
+    @client.vm_start_with_cloudinit(@vm.id, user_data)
+    while !@client.vm(@vm.id).running? do
+    end
+    @client.vm_action(@vm.id, :shutdown)
+  end
+
   it "test_should_set_vm_ticket" do
     @client.vm_action(@vm.id, :start)
     while !@client.vm(@vm.id).running? do
