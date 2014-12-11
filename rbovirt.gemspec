@@ -6,6 +6,7 @@ require 'ovirt/version'
 Gem::Specification.new do |gem|
   gem.name          = "rbovirt"
   gem.version       = OVIRT::VERSION
+  gem.license       = "MIT"
   gem.authors       = ['Amos Benari']
   gem.email         = ['abenari@redhat.com']
   gem.homepage      = "http://github.com/abenari/rbovirt"
