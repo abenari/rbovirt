@@ -120,11 +120,13 @@ module OVIRT
       ssh_authorized_keys = opts[:ssh_authorized_keys]
       fileslist           = opts[:files]
       runcmd              = opts[:runcmd]
+      extracmd            = nil 
       unless opts[:phone_home].nil?
         phone_home = \
-        "phone_home\n" \
+        "phone_home:\n" \
         "  url: #{opts[:phone_home]['url']}\n" \
         "  post: #{opts[:phone_home]['post']}\n"
+        extracmd   = phone_home
       end
       cmdlist             = 'runcmd:'
       unless runcmd.nil?
@@ -132,6 +134,11 @@ module OVIRT
           cmdlist = \
 	  "#{cmdlist}\n" \
           "- #{cmd}\n"
+        end
+        if extracmd.nil?
+          extracmd = cmdlist
+        else
+          extracmd = extracmd +cmdlist
         end
       end
       builder   = Nokogiri::XML::Builder.new do
@@ -194,19 +201,12 @@ module OVIRT
                 }
               regenerate_ssh_keys 'true'
               files {
-	        unless runcmd.nil?
+	        unless extracmd.nil?
                   file {
                     name_   'ignored'
-                    content cmdlist
+                    content extracmd
                     type    'PLAINTEXT'
                    }
-                end
-	        unless phone_home.nil?
-                  file {
-                    name_   'ignored'
-                    content phone_home
-                    type    'PLAINTEXT'
-                  }
                 end
                 unless fileslist.nil?
                   fileslist.each do |fileentry|
