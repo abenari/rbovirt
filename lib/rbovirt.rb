@@ -19,10 +19,12 @@ require "client/host_api"
 require "client/datacenter_api"
 require "client/storage_domain_api"
 require "client/quota_api"
+require "client/disk_api"
 
 require "nokogiri"
 require "rest_client"
 require "restclient_ext/request"
+require "restclient_ext/resource"
 
 module OVIRT
 
@@ -131,10 +133,12 @@ module OVIRT
       end
     end
 
-    def http_delete(suburl)
+    def http_delete(suburl, request={})
+      body    = request[:body]
       begin
-        headers = {:accept => 'application/xml'}.merge(auth_header).merge(filter_header)
-        res = rest_client(suburl).delete(headers)
+        headers = body ? http_headers(request[:headers] || {}) :
+          {:accept => 'application/xml'}.merge(auth_header).merge(filter_header)
+        res = rest_client(suburl).delete(body, headers)
         puts "#{res}\n" if ENV['RBOVIRT_LOG_RESPONSE']
         Nokogiri::XML(res)
       rescue
