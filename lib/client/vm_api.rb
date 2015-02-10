@@ -46,7 +46,7 @@ module OVIRT
     end 
 
     def destroy_interface(vm_id, interface_id)
-      http_delete("/vms/%s/nics/%s" % [vm_id, interface_id], nil)
+      http_delete("/vms/%s/nics/%s" % [vm_id, interface_id])
     end
 
     def add_interface(vm_id, opts={})
@@ -84,7 +84,7 @@ module OVIRT
     end
 
     def destroy_volume(vm_id, vol_id)
-      http_delete("/vms/%s/disks/%s" % [vm_id, vol_id], nil)
+      http_delete("/vms/%s/disks/%s" % [vm_id, vol_id])
     end
 
     def update_volume(vm_id, vol_id, opts={})
@@ -126,7 +126,7 @@ module OVIRT
     end
 
     def destroy_vm(id)
-      http_delete("/vms/%s" % id, nil)
+      http_delete("/vms/%s" % id)
     end
 
     def set_ticket(vm_id, options={})

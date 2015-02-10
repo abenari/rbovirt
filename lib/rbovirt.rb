@@ -133,7 +133,7 @@ module OVIRT
       end
     end
 
-    def http_delete(suburl, body, headers={})
+    def http_delete(suburl, body=nil, headers={})
       begin
         headers = body ? http_headers(headers) :
           {:accept => 'application/xml'}.merge(auth_header).merge(filter_header)

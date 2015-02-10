@@ -20,7 +20,7 @@ module OVIRT
     end
 
     def destroy_template(id)
-      http_delete("/templates/%s" % id, nil)
+      http_delete("/templates/%s" % id)
     end
 
     def template_interfaces template_id
