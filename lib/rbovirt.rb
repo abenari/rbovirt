@@ -133,10 +133,9 @@ module OVIRT
       end
     end
 
-    def http_delete(suburl, request={})
-      body    = request[:body]
+    def http_delete(suburl, body, headers={})
       begin
-        headers = body ? http_headers(request[:headers] || {}) :
+        headers = body ? http_headers(headers) :
           {:accept => 'application/xml'}.merge(auth_header).merge(filter_header)
         res = rest_client(suburl).delete(body, headers)
         puts "#{res}\n" if ENV['RBOVIRT_LOG_RESPONSE']

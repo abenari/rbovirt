@@ -30,7 +30,6 @@ module OVIRT
           raise BackendVersionUnsupportedException.new
         end
       end
-
       opts[:cluster_name] ||= clusters.first.name unless opts[:cluster]
       OVIRT::VM::new(self, http_post("/vms",OVIRT::VM.to_xml(opts)).root)
     end
@@ -47,7 +46,7 @@ module OVIRT
     end 
 
     def destroy_interface(vm_id, interface_id)
-      http_delete("/vms/%s/nics/%s" % [vm_id, interface_id])
+      http_delete("/vms/%s/nics/%s" % [vm_id, interface_id], nil)
     end
 
     def add_interface(vm_id, opts={})
@@ -85,7 +84,7 @@ module OVIRT
     end
 
     def destroy_volume(vm_id, vol_id)
-      http_delete("/vms/%s/disks/%s" % [vm_id, vol_id])
+      http_delete("/vms/%s/disks/%s" % [vm_id, vol_id], nil)
     end
 
     def update_volume(vm_id, vol_id, opts={})
@@ -112,7 +111,7 @@ module OVIRT
 
     def detach_volume(vm_id, vol_id)
       deactivate_volume(vm_id, vol_id)
-      http_delete("/vms/%s/disks/%s" % [vm_id, vol_id], :body => '<action><detach>true</detach></action>')
+      http_delete("/vms/%s/disks/%s" % [vm_id, vol_id], '<action><detach>true</detach></action>')
     end
 
     def vm_action(id, action, opts={})
@@ -127,7 +126,7 @@ module OVIRT
     end
 
     def destroy_vm(id)
-      http_delete("/vms/%s" % id)
+      http_delete("/vms/%s" % id, nil)
     end
 
     def set_ticket(vm_id, options={})
