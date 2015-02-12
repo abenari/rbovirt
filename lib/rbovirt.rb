@@ -137,7 +137,7 @@ module OVIRT
       begin
         headers = body ? http_headers(headers) :
           {:accept => 'application/xml'}.merge(auth_header).merge(filter_header)
-        res = rest_client(suburl).delete(body, headers)
+        res = rest_client(suburl).delete_with_payload(body, headers)
         puts "#{res}\n" if ENV['RBOVIRT_LOG_RESPONSE']
         Nokogiri::XML(res)
       rescue
