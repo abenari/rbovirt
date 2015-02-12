@@ -30,7 +30,6 @@ module OVIRT
           raise BackendVersionUnsupportedException.new
         end
       end
-
       opts[:cluster_name] ||= clusters.first.name unless opts[:cluster]
       OVIRT::VM::new(self, http_post("/vms",OVIRT::VM.to_xml(opts)).root)
     end
@@ -90,6 +89,29 @@ module OVIRT
 
     def update_volume(vm_id, vol_id, opts={})
       http_put("/vms/%s/disks/%s" % [vm_id, vol_id], OVIRT::Volume.to_xml(opts))
+    end
+
+    def volume_active?(vm_id, vol_id)
+      http_response = http_get("/vms/%s/disks/%s" % [vm_id, vol_id, http_headers])
+      http_response.xpath("/disk/active").first.text.upcase == "TRUE"
+    end
+
+    def activate_volume(vm_id, vol_id)
+      http_post("/vms/%s/disks/%s/activate" % [vm_id, vol_id], '<action/>') unless volume_active?(vm_id, vol_id)
+    end
+
+    def deactivate_volume(vm_id, vol_id)
+      http_post("/vms/%s/disks/%s/deactivate" % [vm_id, vol_id], '<action/>') if volume_active?(vm_id, vol_id)
+    end
+
+    def attach_volume(vm_id, vol_id, activate=true)
+      http_post("/vms/%s/disks" % vm_id, "<disk id='%s'/>" % vol_id)
+      activate_volume(vm_id, vol_id) if activate
+    end
+
+    def detach_volume(vm_id, vol_id)
+      deactivate_volume(vm_id, vol_id)
+      http_delete("/vms/%s/disks/%s" % [vm_id, vol_id], '<action><detach>true</detach></action>')
     end
 
     def vm_action(id, action, opts={})
