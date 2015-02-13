@@ -1,6 +1,6 @@
 module RestClient
   class Resource
-    def delete(payload, additional_headers={}, &block)
+    def delete_with_payload(payload, additional_headers={}, &block)
       headers = (options[:headers] || {}).merge(additional_headers)
       Request.execute(options.merge(
         :method => :delete,
