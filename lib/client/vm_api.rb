@@ -19,7 +19,9 @@ module OVIRT
 
       if opts[:user_data] and not opts[:user_data].empty?
         if api_version?('3') and cluster_major_ver >= 3
-          if cluster_minor_ver >= 1
+          if cluster_minor_ver >= 3
+            opts[:user_data_method] = :payload_v3_3
+          elsif cluster_minor_ver >= 1
             opts[:user_data_method] = :payload
           elsif floppy_hook?
             opts[:user_data_method] = :custom_property
