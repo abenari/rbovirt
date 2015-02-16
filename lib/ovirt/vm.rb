@@ -116,6 +116,7 @@ module OVIRT
       gateway             = opts[:gateway]
       domain              = opts[:domain]
       nicname             = opts[:nicname]
+      user                = opts[:user] || 'root'
       password            = opts[:password]
       ssh_authorized_keys = opts[:ssh_authorized_keys]
       fileslist           = opts[:files]
@@ -158,7 +159,7 @@ module OVIRT
                 unless password.nil?
                   users { 
                     user {  
-                      user_name 'root'
+                      user_name user
                       password password
                     }
                   }
@@ -166,7 +167,7 @@ module OVIRT
                 unless ssh_authorized_keys.nil?
                   authorized_keys {
                     authorized_key {
-                      user { user_name 'root' }
+                      user { user_name user }
                       ssh_authorized_keys.each do |sshkey|
                         key sshkey    
                       end
