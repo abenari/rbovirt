@@ -31,10 +31,12 @@ module OVIRT
     end
 
     def add_vm_to_affinity_group(affinity_group_id, vm_id, opts={})
+      cluster_id = opts[:cluster_id] || current_cluster.id
       http_post("/clusters/%s/affinitygroups/%s/vms" % [cluster_id, affinity_group_id], "<vm id='%s'/>" % vm_id)
     end
     
     def delete_vm_from_affinity_group(affinity_group_id, vm_id, opts={})
+      cluster_id = opts[:cluster_id] || current_cluster.id
       http_delete("/clusters/%s/affinitygroups/%s/vms/%s" % [cluster_id, affinity_group_id, vm_id])
     end
   end
