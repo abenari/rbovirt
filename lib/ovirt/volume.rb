@@ -1,7 +1,7 @@
 module OVIRT
 
   class Volume < BaseObject
-    attr_reader :size, :disk_type, :bootable, :interface, :format, :sparse, :status, :storage_domain, :vm, :quota 
+    attr_reader :size, :disk_type, :bootable, :interface, :format, :sparse, :status, :storage_domain, :vm, :quota, :alias
 
     def initialize(client, xml)
       super(client, xml[:id], xml[:href], (xml/'name').first.text)
@@ -38,6 +38,9 @@ module OVIRT
           if opts[:quota]
             quota_( :id => opts[:quota])
           end
+          if opts[:alias]
+            alias_(opts[:alias])
+          end
         }
       end
       Nokogiri::XML(builder.to_xml).root.to_s
@@ -54,6 +57,7 @@ module OVIRT
      @status = ((xml/'status/state').first.text rescue nil)
      @vm = Link::new(@client, (xml/'vm').first[:id], (xml/'vm').first[:href]) rescue nil
      @quota = ((xml/'quota').first[:id] rescue nil)
+     @alias = ((xml/'alias').first.text rescue nil)
     end
 
   end
