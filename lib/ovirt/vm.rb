@@ -103,6 +103,16 @@ module OVIRT
               file(:name => "#{opts[:fileinject_path] || OVIRT::FILEINJECT_PATH}") { content(Base64::decode64(opts[:user_data])) }
             }
           } if(opts[:user_data_method] && opts[:user_data_method] == :payload)
+          payloads {
+            payload(:type => 'floppy') {
+              files {
+                file {
+                  name_ "#{opts[:fileinject_path] || OVIRT::FILEINJECT_PATH}"
+                  content Base64::decode64(opts[:user_data])
+                }
+              }
+            }
+          } if(opts[:user_data_method] && opts[:user_data_method] == :payload_v3_3)
         }
       end
       Nokogiri::XML(builder.to_xml).root.to_s
