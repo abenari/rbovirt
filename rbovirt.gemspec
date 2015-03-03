@@ -21,10 +21,12 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
 
   gem.add_runtime_dependency('nokogiri')
-  gem.add_runtime_dependency('rest-client')
+  gem.add_runtime_dependency('rest-client', '> 1.7.0')
   gem.add_development_dependency('shoulda')
   gem.add_development_dependency('rspec-rails', '~> 2.6')
   gem.add_development_dependency('rake')
+
+  gem.required_ruby_version = '>= 1.9.3'
 
   gem.rdoc_options << '--title' << gem.name << '--main' << 'README.rdoc' << '--line-numbers' << '--inline-source'
   gem.extra_rdoc_files = ['README.rdoc', 'CHANGES.rdoc']
