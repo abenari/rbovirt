@@ -5,7 +5,7 @@ module OVIRT
 
   class VM < BaseObject
     attr_reader :description, :status, :memory, :profile, :display, :host, :cluster, :template
-    attr_reader :storage, :cores, :creation_time, :os, :ips, :vnc, :quota
+    attr_reader :storage, :cores, :creation_time, :os, :ha, :ha_priority, :ips, :vnc, :quota
     attr_accessor :interfaces, :volumes
 
     def initialize(client, xml)
@@ -87,6 +87,12 @@ module OVIRT
               kernel (opts[:os_kernel])
               initrd (opts[:os_initrd])
               cmdline (opts[:os_cmdline])
+            }
+          end
+          if !opts[:ha].nil? || !opts[:ha_priority].nil?
+            high_availability_{
+              enabled_(opts[:ha]) unless opts[:ha].nil?
+              priority_(opts[:ha_priority]) unless opts[:ha_priority].nil?
             }
           end
           display_{
@@ -183,7 +189,7 @@ module OVIRT
                       end
                     }
                   }
-	        end
+                end
                 network_configuration { 
                   unless nicname.nil?
                     nics {
@@ -212,7 +218,7 @@ module OVIRT
                 }
               regenerate_ssh_keys 'true'
               files {
-	        unless extracmd.nil?
+                unless extracmd.nil?
                   file {
                     name_   'ignored'
                     content extracmd
@@ -267,6 +273,8 @@ module OVIRT
           :type => (xml/'os').first[:type],
           :boot => (xml/'os/boot').collect {|boot| boot[:dev] }
       }
+      @ha = ((xml/'high_availability/enabled').first.text rescue nil)
+      @ha_priority = ((xml/'high_availability/priority').first.text rescue nil)
       @quota = ((xml/'quota').first[:id] rescue nil)
 
       disks = xml/'disks/disk'
