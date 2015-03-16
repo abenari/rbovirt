@@ -44,6 +44,9 @@ module OVIRT
           if opts[:alias]
             alias_(opts[:alias])
           end
+          if opts[:wipe_after_delete]
+            wipe_after_delete(opts[:wipe_after_delete])
+          end
         }
       end
       Nokogiri::XML(builder.to_xml).root.to_s
@@ -62,6 +65,7 @@ module OVIRT
      @vm = Link::new(@client, (xml/'vm').first[:id], (xml/'vm').first[:href]) rescue nil
      @quota = ((xml/'quota').first[:id] rescue nil)
      @alias = ((xml/'alias').first.text rescue nil)
+     @wipe_after_delete = ((xml/'wipe_after_delete').first.text rescue nil)
     end
 
   end
