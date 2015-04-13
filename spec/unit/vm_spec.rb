@@ -232,6 +232,31 @@ END_HEREDOC
       xml.nil?.should eql(false)
     end
 
+    it "create vm xml without description" do
+      opts = {
+          :cluster_name =>'cluster',
+          :template_name =>'template',
+      }
+      xml = OVIRT::VM.to_xml(opts)
+      xml.nil?.should eql(false)
+      Nokogiri::XML(xml).xpath("//description").length.should eql(1)
+      Nokogiri::XML(xml).xpath("//description")[0].children.length.should eql(0)
+    end
+
+    it "create vm xml with description" do
+      opts = {
+          :cluster_name =>'cluster',
+          :template_name =>'template',
+          :description => 'a description',
+      }
+      xml = OVIRT::VM.to_xml(opts)
+      xml.nil?.should eql(false)
+      Nokogiri::XML(xml).xpath("//description").length.should eql(1)
+      Nokogiri::XML(xml).xpath("//description")[0].children.length.should eql(1)
+      Nokogiri::XML(xml).xpath("//description")[0].children[0].text?.should eql(true)
+      Nokogiri::XML(xml).xpath("//description")[0].content.should eql("a description")
+    end
+
     it "should be running" do
       vm = OVIRT::VM.new(nil, Nokogiri::XML(@xml).xpath('/').first)
       vm.running?.should eql(true)
