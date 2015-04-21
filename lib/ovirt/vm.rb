@@ -5,7 +5,7 @@ module OVIRT
 
   class VM < BaseObject
     attr_reader :description, :status, :memory, :profile, :display, :host, :cluster, :template
-    attr_reader :storage, :cores, :creation_time, :os, :ha, :ha_priority, :ips, :vnc, :quota
+    attr_reader :storage, :cores, :creation_time, :os, :ha, :ha_priority, :ips, :vnc, :quota, :clone
     attr_accessor :interfaces, :volumes
 
     def initialize(client, xml)
@@ -95,6 +95,7 @@ module OVIRT
               priority_(opts[:ha_priority]) unless opts[:ha_priority].nil?
             }
           end
+          disks_ { clone_(opts[:clone]) } if opts[:clone]
           display_{
             type_(opts[:display][:type])
           } if opts[:display]
@@ -282,6 +283,8 @@ module OVIRT
 
       interfaces = xml/'nics/nic'
       @interfaces = interfaces.length > 0 ? interfaces.collect {|nic| OVIRT::Interface::new(@client, nic)} : nil
+
+      @clone = ((xml/'disks/clone').first.text rescue nil)
     end
 
   end
