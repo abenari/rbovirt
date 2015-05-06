@@ -1,6 +1,6 @@
 module OVIRT
   class Template < BaseObject
-    attr_reader :description, :status, :cluster, :creation_time, :os, :storage, :display, :profile, :memory, :version
+    attr_reader :description, :comment, :status, :cluster, :creation_time, :os, :storage, :display, :profile, :memory, :version
 
     def initialize(client, xml)
       super(client, xml[:id], xml[:href], (xml/'name').first.text)
@@ -13,6 +13,7 @@ module OVIRT
         template_ {
           name_ opts[:name] || "t-#{Time.now.to_i}"
           description opts[:description] || ''
+          comment opts[:comment] || ''
           vm(:id => opts[:vm])
         }
       end
@@ -30,6 +31,7 @@ module OVIRT
     private
     def parse_xml_attributes!(xml)
       @description = ((xml/'description').first.text rescue '')
+      @comment = ((xml/'comment').first.text rescue '')
       @version = TemplateVersion.new((xml/'version').first)
       @status = ((xml/'status').first.text rescue 'unknown')
       @memory = (xml/'memory').first.text

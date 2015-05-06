@@ -4,7 +4,7 @@ module OVIRT
     FILEINJECT_PATH = "user-data.txt"
 
   class VM < BaseObject
-    attr_reader :description, :status, :memory, :profile, :display, :host, :cluster, :template
+    attr_reader :description, :comment, :status, :memory, :profile, :display, :host, :cluster, :template
     attr_reader :storage, :cores, :creation_time, :os, :ha, :ha_priority, :ips, :vnc, :quota, :clone
     attr_accessor :interfaces, :volumes
 
@@ -50,6 +50,9 @@ module OVIRT
       builder = Nokogiri::XML::Builder.new do
         vm{
           name_ opts[:name] || "i-#{Time.now.to_i}"
+          if opts[:comment]
+            comment_ opts[:comment]
+          end
           if opts[:template] && !opts[:template].empty?
             template_ :id => (opts[:template])
           elsif opts[:template_name] && !opts[:template_name].empty?
@@ -248,6 +251,7 @@ module OVIRT
 
     def parse_xml_attributes!(xml)
       @description = ((xml/'description').first.text rescue '')
+      @comment = ((xml/'comment').first.text rescue '')
       @status = ((xml/'status').first.text rescue 'unknown')
       @memory = (xml/'memory').first.text
       @profile = (xml/'type').first.text
