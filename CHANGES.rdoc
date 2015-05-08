@@ -6,6 +6,12 @@ _rbovirt_ project.
 Note that this list of changes was added with the 0.0.30 release,
 previous releases aren't described here.
 
+== 0.1.1
+
+New features:
+
+* Added +description+ attribute to VMs.
+
 == 0.1.0 / 2015-05-07
 
 New features:

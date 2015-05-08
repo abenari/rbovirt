@@ -50,6 +50,7 @@ module OVIRT
       builder = Nokogiri::XML::Builder.new do
         vm{
           name_ opts[:name] || "i-#{Time.now.to_i}"
+          description_ opts[:description] || ""
           if opts[:comment]
             comment_ opts[:comment]
           end
