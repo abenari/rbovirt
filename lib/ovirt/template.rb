@@ -1,6 +1,7 @@
 module OVIRT
   class Template < BaseObject
-    attr_reader :description, :comment, :status, :cluster, :creation_time, :os, :storage, :display, :profile, :memory, :version
+    attr_reader :description, :status, :cluster, :creation_time, :os, :storage, :display, :profile, :memory, :version
+    attr_accessor :comment
 
     def initialize(client, xml)
       super(client, xml[:id], xml[:href], (xml/'name').first.text)
