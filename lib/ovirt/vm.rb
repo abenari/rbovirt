@@ -224,7 +224,7 @@ module OVIRT
               regenerate_ssh_keys 'true'
               files {
                 unless extracmd.nil?
-                  file {
+                  file_ {
                     name_   'ignored'
                     content extracmd
                     type    'PLAINTEXT'
