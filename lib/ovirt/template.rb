@@ -25,7 +25,7 @@ module OVIRT
     end
 
     def volumes
-      @volumes ||= @client.send(:volumes, "/templates/%s/disks" % id)
+      @volumes ||= @client.template_volumes(id)
     end
 
     private
