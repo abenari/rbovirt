@@ -14,6 +14,15 @@ module OVIRT
       end
     end
 
+    def process_vm_opts(opts)
+      if (opts[:template] or opts[:template_name]) and (opts[:storagedomain] or opts[:storagedomain_name])
+        template_id = opts[:template] || templates.select{|t| t.name == opts[:template_name]}.first.id
+        disk_id = template_volumes(template_id).first.id
+        storagedomain_id = opts[:storagedomain] || storagedomains.select{|s| s.name == opts[:storagedomain_name]}.first.id
+        opts[:disks] = [{:id => disk_id, :storage_domain => storagedomain_id}]
+      end
+    end
+
     def create_vm(opts)
       cluster_major_ver, cluster_minor_ver = cluster_version(self.cluster_id)
 
@@ -32,6 +41,9 @@ module OVIRT
           raise BackendVersionUnsupportedException.new
         end
       end
+
+      process_vm_opts(opts)
+
       opts[:cluster_name] ||= clusters.first.name unless opts[:cluster]
       OVIRT::VM::new(self, http_post("/vms",OVIRT::VM.to_xml(opts)).root)
     end
