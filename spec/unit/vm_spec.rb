@@ -257,6 +257,25 @@ END_HEREDOC
       Nokogiri::XML(xml).xpath("//description")[0].content.should eql("a description")
     end
 
+    it "create vm xml with disks" do
+      disk = "00000000-0000-0000-0000-000000000000"
+      storagedomain = "00000000-0000-0000-0000-000000000001"
+      disks = [{:id => disk, :storagedomain => storagedomain}]
+      opts = {
+          :cluster_name => 'cluster',
+          :disks => disks,
+      }
+      xml = OVIRT::VM.to_xml(opts)
+      puts xml
+      xml.nil?.should eql(false)
+      Nokogiri::XML(xml).xpath("//disks").length.should eql(1)
+      Nokogiri::XML(xml).xpath("//disks")[0].element_children.length.should eql(1)
+      Nokogiri::XML(xml).xpath("//disks/disk[contains(@id,'#{disk}')]").length.should eql(1)
+      Nokogiri::XML(xml).xpath("//disks/disk/storage_domains").length.should eql(1)
+      Nokogiri::XML(xml).xpath("//disks/disk/storage_domains")[0].element_children.length.should eql(1)
+      Nokogiri::XML(xml).xpath("//disks/disk/storage_domains/storage_domain[contains(@id,'#{storagedomain}')]").length.should eql(1)
+    end
+
     it "should be running" do
       vm = OVIRT::VM.new(nil, Nokogiri::XML(@xml).xpath('/').first)
       vm.running?.should eql(true)
