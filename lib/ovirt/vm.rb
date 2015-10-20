@@ -208,7 +208,7 @@ module OVIRT
                         end 
                       }
                     }
-                  elsif !nicsdef.nil?
+                  elsif nicsdef.is_a?(Array) && !nicsdef.empty? && nicsdef.all? { |n| n.is_a?(Hash) }
                     nics {
                       nicsdef.each do |n|
                         nic {
