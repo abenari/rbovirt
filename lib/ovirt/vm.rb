@@ -99,7 +99,16 @@ module OVIRT
               priority_(opts[:ha_priority]) unless opts[:ha_priority].nil?
             }
           end
-          disks_ { clone_(opts[:clone]) } if opts[:clone]
+          disks_ {
+            clone_(opts[:clone]) if opts[:clone]
+            if opts[:disks]
+              for d in opts[:disks]
+                disk(:id => d[:id]) {
+                  storage_domains { storage_domain(:id => d[:storagedomain]) }
+                }
+              end
+            end
+          }
           display_{
             type_(opts[:display][:type])
           } if opts[:display]

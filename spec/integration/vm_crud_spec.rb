@@ -117,6 +117,7 @@ shared_examples_for "VM Life cycle without template" do
   end
 end
 
+
 describe "Admin API VM Life cycle" do
 
   before(:all) do
@@ -149,3 +150,106 @@ describe "User API VM Life cycle" do
     it_behaves_like "Basic VM Life cycle"
   end
 end
+
+describe "VM API support functions" do
+
+  before(:all) do
+    setup_client
+
+    # Skip first, blank template. It won't work here.
+    @template = @client.templates[1].id
+    @template_name = @client.templates[1].name
+    @storagedomain = @client.storagedomains.first.id
+    @storagedomain_name = @client.storagedomains.first.name
+  end
+
+  context 'options processing' do
+    it "should process template option into disk decriptions" do
+      t_id = @template
+      opts = {:template => t_id}
+      t_name = opts[:template_name]
+      @client.process_vm_opts(opts)
+      opts[:template].should eql(t_id)
+      opts[:template_name].should eql(t_name)
+    end
+
+    it "should process template_name option into disk decriptions" do
+      t_name = @template_name
+      opts = {:template_name => t_name}
+      t_id = opts[:template]
+      @client.process_vm_opts(opts)
+      opts[:template].should eql(t_id)
+      opts[:template_name].should eql(t_name)
+    end
+
+    it "should process template and storagedomain options into disk decriptions" do
+      t_id = @template
+      s_id = @storagedomain
+      opts = {:template => t_id,
+              :storagedomain => s_id}
+      t_name = opts[:template_name]
+      s_name = opts[:storagedomain_name]
+      @client.process_vm_opts(opts)
+      opts[:disks].length.should eql(1)
+      opts[:disks].first[:id].should_not be_nil
+      opts[:disks].first[:storage_domain].should eql(s_id)
+      opts[:template].should eql(t_id)
+      opts[:template_name].should eql(t_name)
+      opts[:storagedomain].should eql(s_id)
+      opts[:storagedomain_name].should eql(s_name)
+    end
+
+    it "should process template_name and storagedomain options into disk decriptions" do
+      t_name = @template_name
+      s_id = @storagedomain
+      opts = {:template_name => t_name,
+              :storagedomain => s_id}
+      t_id = opts[:template]
+      s_name = opts[:storagedomain_name]
+      @client.process_vm_opts(opts)
+      opts[:disks].length.should eql(1)
+      opts[:disks].first[:id].should_not be_nil
+      opts[:disks].first[:storage_domain].should eql(s_id)
+      opts[:template].should eql(t_id)
+      opts[:template_name].should eql(t_name)
+      opts[:storagedomain].should eql(s_id)
+      opts[:storagedomain_name].should eql(s_name)
+    end
+
+    it "should process template and storagedomain_name options into disk decriptions" do
+      t_id = @template
+      s_name = @storagedomain_name
+      opts = {:template => t_id,
+              :storagedomain_name => s_name}
+      t_name = opts[:template_name]
+      s_id = opts[:storagedomain_id]
+      @client.process_vm_opts(opts)
+      opts[:disks].length.should eql(1)
+      opts[:disks].first[:id].should_not be_nil
+      opts[:disks].first[:storage_domain].should eql(@storagedomain)
+      opts[:template].should eql(t_id)
+      opts[:template_name].should eql(t_name)
+      opts[:storagedomain].should eql(s_id)
+      opts[:storagedomain_name].should eql(s_name)
+    end
+
+    it "should process template_name and storagedomain_name options into disk decriptions" do
+      t_name = @template_name
+      s_name = @storagedomain_name
+      opts = {:template_name => t_name,
+              :storagedomain_name => s_name}
+      t_id = opts[:template]
+      s_id = opts[:storagedomain]
+      @client.process_vm_opts(opts)
+      opts[:disks].length.should eql(1)
+      opts[:disks].first[:id].should_not be_nil
+      opts[:disks].first[:storage_domain].should eql(@storagedomain)
+      opts[:template].should eql(t_id)
+      opts[:template_name].should eql(t_name)
+      opts[:storagedomain].should eql(s_id)
+      opts[:storagedomain_name].should eql(s_name)
+    end
+
+  end
+end
+
