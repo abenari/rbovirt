@@ -137,6 +137,7 @@ module OVIRT
       gateway             = opts[:gateway]
       domain              = opts[:domain]
       nicname             = opts[:nicname]
+      nicsdef             = opts[:nicsdef]
       user                = opts[:user] || 'root'
       password            = opts[:password]
       ssh_authorized_keys = opts[:ssh_authorized_keys]
@@ -195,18 +196,35 @@ module OVIRT
                     }
                   }
                 end
-                network_configuration { 
-                  unless nicname.nil?
+                network_configuration {
+                  if !nicname.nil?
                     nics {
                       nic {
-	                name_ nicname
+                        name_ nicname
                         unless ip.nil? || netmask.nil? || gateway.nil?
                           network { ip(:'address'=> ip , :'netmask'=> netmask, :'gateway'=> gateway ) }
                           boot_protocol 'STATIC'
                           on_boot 'true'
                         end 
                       }
-                    } 
+                    }
+                  elsif nicsdef.is_a?(Array) && !nicsdef.empty? && nicsdef.all? { |n| n.is_a?(Hash) }
+                    nics {
+                      nicsdef.each do |n|
+                        nic {
+                          name_(n[:nicname])
+                          boot_protocol_(n[:boot_protocol] || 'NONE') # Defaults to NONE boot proto
+                          on_boot_(n[:on_boot] || 'true') # Defaults to 'true'
+                          unless n[:ip].nil? || n[:netmask].nil?
+                            network_ {
+                              n[:gateway].nil? ?
+                              ip_(:address => n[:ip], :netmask => n[:netmask]) :
+                              ip_(:address => n[:ip], :netmask => n[:netmask], :gateway => n[:gateway])
+                            }
+                          end
+                        }
+                      end
+                    }
                   end
                   dns { 
                     unless dns.nil? 
