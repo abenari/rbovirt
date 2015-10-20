@@ -4,9 +4,9 @@ module OVIRT
     FILEINJECT_PATH = "user-data.txt"
 
   class VM < BaseObject
-    attr_reader :description, :comment, :status, :memory, :profile, :display, :host, :cluster, :template
+    attr_reader :description, :status, :memory, :profile, :display, :host, :cluster, :template
     attr_reader :storage, :cores, :creation_time, :os, :ha, :ha_priority, :ips, :vnc, :quota, :clone
-    attr_accessor :interfaces, :volumes
+    attr_accessor :comment, :interfaces, :volumes
 
     def initialize(client, xml)
       super(client, xml[:id], xml[:href], (xml/'name').first.text)
