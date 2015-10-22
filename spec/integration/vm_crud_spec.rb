@@ -156,9 +156,9 @@ describe "VM API support functions" do
   before(:all) do
     setup_client
 
-    # Skip first, blank template. It won't work here.
-    @template = @client.templates[1].id
-    @template_name = @client.templates[1].name
+    @template_name = @config['template'] || @client.templates.first.name
+    @template = @client.templates.find { |t| t.name == @template_name }.id
+    @template_disks = @client.template_volumes(@template)
     @storagedomain = @client.storagedomains.first.id
     @storagedomain_name = @client.storagedomains.first.name
   end
@@ -190,9 +190,9 @@ describe "VM API support functions" do
       t_name = opts[:template_name]
       s_name = opts[:storagedomain_name]
       @client.process_vm_opts(opts)
-      opts[:disks].length.should eql(1)
+      opts[:disks].length.should eql(@template_disks.length)
       opts[:disks].first[:id].should_not be_nil
-      opts[:disks].first[:storage_domain].should eql(s_id)
+      opts[:disks].first[:storagedomain].should eql(s_id)
       opts[:template].should eql(t_id)
       opts[:template_name].should eql(t_name)
       opts[:storagedomain].should eql(s_id)
@@ -207,9 +207,9 @@ describe "VM API support functions" do
       t_id = opts[:template]
       s_name = opts[:storagedomain_name]
       @client.process_vm_opts(opts)
-      opts[:disks].length.should eql(1)
+      opts[:disks].length.should eql(@template_disks.length)
       opts[:disks].first[:id].should_not be_nil
-      opts[:disks].first[:storage_domain].should eql(s_id)
+      opts[:disks].first[:storagedomain].should eql(s_id)
       opts[:template].should eql(t_id)
       opts[:template_name].should eql(t_name)
       opts[:storagedomain].should eql(s_id)
@@ -224,9 +224,9 @@ describe "VM API support functions" do
       t_name = opts[:template_name]
       s_id = opts[:storagedomain_id]
       @client.process_vm_opts(opts)
-      opts[:disks].length.should eql(1)
+      opts[:disks].length.should eql(@template_disks.length)
       opts[:disks].first[:id].should_not be_nil
-      opts[:disks].first[:storage_domain].should eql(@storagedomain)
+      opts[:disks].first[:storagedomain].should eql(@storagedomain)
       opts[:template].should eql(t_id)
       opts[:template_name].should eql(t_name)
       opts[:storagedomain].should eql(s_id)
@@ -241,9 +241,9 @@ describe "VM API support functions" do
       t_id = opts[:template]
       s_id = opts[:storagedomain]
       @client.process_vm_opts(opts)
-      opts[:disks].length.should eql(1)
+      opts[:disks].length.should eql(@template_disks.length)
       opts[:disks].first[:id].should_not be_nil
-      opts[:disks].first[:storage_domain].should eql(@storagedomain)
+      opts[:disks].first[:storagedomain].should eql(@storagedomain)
       opts[:template].should eql(t_id)
       opts[:template_name].should eql(t_name)
       opts[:storagedomain].should eql(s_id)
