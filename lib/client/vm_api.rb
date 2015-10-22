@@ -19,7 +19,7 @@ module OVIRT
         template_id = opts[:template] || templates.select{|t| t.name == opts[:template_name]}.first.id
         disk_id = template_volumes(template_id).first.id
         storagedomain_id = opts[:storagedomain] || storagedomains.select{|s| s.name == opts[:storagedomain_name]}.first.id
-        opts[:disks] = [{:id => disk_id, :storage_domain => storagedomain_id}]
+        opts[:disks] = [{:id => disk_id, :storagedomain => storagedomain_id}]
       end
     end
 
