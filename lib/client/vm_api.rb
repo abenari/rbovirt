@@ -17,9 +17,15 @@ module OVIRT
     def process_vm_opts(opts)
       if (opts[:template] or opts[:template_name]) and (opts[:storagedomain] or opts[:storagedomain_name])
         template_id = opts[:template] || templates.select{|t| t.name == opts[:template_name]}.first.id
-        disk_id = template_volumes(template_id).first.id
+        template_disks = template_volumes(template_id)
         storagedomain_id = opts[:storagedomain] || storagedomains.select{|s| s.name == opts[:storagedomain_name]}.first.id
-        opts[:disks] = [{:id => disk_id, :storagedomain => storagedomain_id}]
+
+        # Make sure the 'clone' option is set if any of the disks defined by
+        # the template is stored on a different storage domain than requested
+        opts[:clone] = true unless opts[:clone] == true || template_disks.empty? || template_disks.all? { |d| d.storage_domain == storagedomain_id }
+
+        # Create disks map
+        opts[:disks] = template_disks.collect { |d| {:id => d.id, :storagedomain => storagedomain_id} }
       end
     end
 
