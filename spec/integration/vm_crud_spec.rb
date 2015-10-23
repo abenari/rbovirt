@@ -191,8 +191,10 @@ describe "VM API support functions" do
       s_name = opts[:storagedomain_name]
       @client.process_vm_opts(opts)
       opts[:disks].length.should eql(@template_disks.length)
-      opts[:disks].first[:id].should_not be_nil
-      opts[:disks].first[:storagedomain].should eql(s_id)
+      unless @template_disks.empty?
+        opts[:disks].first[:id].should_not be_nil
+        opts[:disks].first[:storagedomain].should eql(s_id)
+      end
       opts[:template].should eql(t_id)
       opts[:template_name].should eql(t_name)
       opts[:storagedomain].should eql(s_id)
@@ -208,8 +210,10 @@ describe "VM API support functions" do
       s_name = opts[:storagedomain_name]
       @client.process_vm_opts(opts)
       opts[:disks].length.should eql(@template_disks.length)
-      opts[:disks].first[:id].should_not be_nil
-      opts[:disks].first[:storagedomain].should eql(s_id)
+      unless @template_disks.empty?
+        opts[:disks].first[:id].should_not be_nil
+        opts[:disks].first[:storagedomain].should eql(s_id)
+      end
       opts[:template].should eql(t_id)
       opts[:template_name].should eql(t_name)
       opts[:storagedomain].should eql(s_id)
@@ -225,8 +229,10 @@ describe "VM API support functions" do
       s_id = opts[:storagedomain_id]
       @client.process_vm_opts(opts)
       opts[:disks].length.should eql(@template_disks.length)
-      opts[:disks].first[:id].should_not be_nil
-      opts[:disks].first[:storagedomain].should eql(@storagedomain)
+      unless @template_disks.empty?
+        opts[:disks].first[:id].should_not be_nil
+        opts[:disks].first[:storagedomain].should eql(@storagedomain)
+      end
       opts[:template].should eql(t_id)
       opts[:template_name].should eql(t_name)
       opts[:storagedomain].should eql(s_id)
@@ -242,8 +248,10 @@ describe "VM API support functions" do
       s_id = opts[:storagedomain]
       @client.process_vm_opts(opts)
       opts[:disks].length.should eql(@template_disks.length)
-      opts[:disks].first[:id].should_not be_nil
-      opts[:disks].first[:storagedomain].should eql(@storagedomain)
+      unless @template_disks.empty?
+        opts[:disks].first[:id].should_not be_nil
+        opts[:disks].first[:storagedomain].should eql(@storagedomain)
+      end
       opts[:template].should eql(t_id)
       opts[:template_name].should eql(t_name)
       opts[:storagedomain].should eql(s_id)
