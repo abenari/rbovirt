@@ -152,6 +152,8 @@ module OVIRT
       ssh_authorized_keys = opts[:ssh_authorized_keys]
       fileslist           = opts[:files]
       runcmd              = opts[:runcmd]
+      cluster_major_ver   = opts[:cluster_major_ver]
+      cluster_minor_ver   = opts[:cluster_minor_ver]
       extracmd            = nil 
       unless opts[:phone_home].nil?
         phone_home = \
@@ -175,6 +177,7 @@ module OVIRT
       end
       builder   = Nokogiri::XML::Builder.new do
         action {
+          use_cloud_init true if cluster_major_ver > 3 || (cluster_major_ver == 3 && cluster_minor_ver >= 5)
           vm {
             initialization {
               unless runcmd.nil?

@@ -134,7 +134,10 @@ module OVIRT
     end
 
     def vm_start_with_cloudinit(id, opts={})
-      xml = OVIRT::VM.cloudinit(opts)
+      # Get the version of the cluster on which the VM is provisioned. This is
+      # required for VM::cloudinit.
+      cluster_major_ver, cluster_minor_ver = cluster_version(vm(id).cluster.id)
+      xml = OVIRT::VM.cloudinit(opts.merge(:cluster_major_ver => cluster_major_ver, :cluster_minor_ver => cluster_minor_ver))
       xml_response = http_post("/vms/%s/%s" % [id, 'start'], xml, {} )
       return (xml_response/'action/status').first.text.strip.upcase=="COMPLETE"
     end
