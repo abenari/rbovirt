@@ -17,15 +17,9 @@ module OVIRT
     def process_vm_opts(opts)
       if (opts[:template] or opts[:template_name]) and (opts[:storagedomain] or opts[:storagedomain_name])
         template_id = opts[:template] || templates.select{|t| t.name == opts[:template_name]}.first.id
-        template_disks = template_volumes(template_id)
+        disk_id = template_volumes(template_id).first.id
         storagedomain_id = opts[:storagedomain] || storagedomains.select{|s| s.name == opts[:storagedomain_name]}.first.id
-
-        # Make sure the 'clone' option is set if any of the disks defined by
-        # the template is stored on a different storage domain than requested
-        opts[:clone] = true unless opts[:clone] == true || template_disks.empty? || template_disks.all? { |d| d.storage_domain == storagedomain_id }
-
-        # Create disks map
-        opts[:disks] = template_disks.collect { |d| {:id => d.id, :storagedomain => storagedomain_id} }
+        opts[:disks] = [{:id => disk_id, :storage_domain => storagedomain_id}]
       end
     end
 
@@ -140,10 +134,13 @@ module OVIRT
     end
 
     def vm_start_with_cloudinit(id, opts={})
-      # Get the version of the cluster on which the VM is provisioned. This is
-      # required for VM::cloudinit.
-      cluster_major_ver, cluster_minor_ver = cluster_version(vm(id).cluster.id)
-      xml = OVIRT::VM.cloudinit(opts.merge(:cluster_major_ver => cluster_major_ver, :cluster_minor_ver => cluster_minor_ver))
+      # Get the api and cluster version on which the VM is provisioned.
+      # This is required for VM::cloudinit.
+      opts.merge!(
+        :cluster_version => cluster_version(vm(id).cluster.id),
+        :api_version => api_version.split('.').map(&:to_i)
+      )
+      xml = OVIRT::VM.cloudinit(opts)
       xml_response = http_post("/vms/%s/%s" % [id, 'start'], xml, {} )
       return (xml_response/'action/status').first.text.strip.upcase=="COMPLETE"
     end

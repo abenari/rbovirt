@@ -102,7 +102,7 @@ module OVIRT
           disks_ {
             clone_(opts[:clone]) if opts[:clone]
             if opts[:disks]
-              opts[:disks].each do |d|
+              for d in opts[:disks]
                 disk(:id => d[:id]) {
                   storage_domains { storage_domain(:id => d[:storagedomain]) }
                 }
@@ -152,8 +152,8 @@ module OVIRT
       ssh_authorized_keys = opts[:ssh_authorized_keys]
       fileslist           = opts[:files]
       runcmd              = opts[:runcmd]
-      cluster_major_ver   = opts[:cluster_major_ver]
-      cluster_minor_ver   = opts[:cluster_minor_ver]
+      cluster_major, cluster_minor = opts[:cluster_version]
+      api_major,api_minor, api_build, api_revision = opts[:api_version]
       extracmd            = nil 
       unless opts[:phone_home].nil?
         phone_home = \
@@ -177,7 +177,23 @@ module OVIRT
       end
       builder   = Nokogiri::XML::Builder.new do
         action {
-          use_cloud_init true if cluster_major_ver > 3 || (cluster_major_ver == 3 && cluster_minor_ver >= 5)
+          # An API has changed in version 3.5.5. Make sure
+          # <use_cloud_init>true</use_cloud_init> is used only if the endpoint
+          # if of that version or higher and the cluster the VM is provisioned
+          # to is of version 3.5 or higher.
+          # NOTE: RHEV-m/OVirt versions prior to 3.6.0 contain a bug
+          # (https://bugzilla.redhat.com/show_bug.cgi?id=1206068) which causes
+          # that build and revision parameters ov API version are set to 0.
+          # This may have an impact on conditional inclusion of <use_cloud_init>
+          # and thus leaving the guest unconfigured.
+          # You can either upgrade to RHEV-m/OVirt 3.6+ or work this around by
+          # manually forcing the ovirt engine to report an appropriate version:
+          # % rhevm-config -s VdcVersion=<major>.<minor>.<build>.<revision>
+          # % service ovirt-engine restart
+          # Please replace the placeholders with appropriate values. 
+          if api_major > 3 || (api_major == 3 && api_minor > 5) || (api_major == 3 && api_minor == 5 && api_build >= 5)
+            use_cloud_init true if cluster_major > 3 || (cluster_major == 3 && cluster_minor >= 5)
+          end
           vm {
             initialization {
               unless runcmd.nil?
