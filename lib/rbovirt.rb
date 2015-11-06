@@ -80,7 +80,11 @@ module OVIRT
     def api_version
       return @api_version unless @api_version.nil?
       xml = http_get("/")/'/api/product_info/version'
-      @api_version = (xml/'version').first[:major] +"."+ (xml/'version').first[:minor]
+      major = (xml/'version').first[:major]
+      minor = (xml/'version').first[:minor]
+      build = (xml/'version').first[:build]
+      revision = (xml/'version').first[:revision]
+      @api_version = "#{major}.#{minor}.#{build}.#{revision}"
     end
 
     def api_version?(major, minor=nil)
