@@ -92,9 +92,13 @@ module OVIRT
     end
 
     private
+
     def search_url opts
-      search = opts[:search] || ("datacenter=%s" % current_datacenter.name)
-      "?search=%s" % CGI.escape(search)
+      search = opts[:search] || ''
+      search += " datacenter=\"%s\"" % current_datacenter.name
+      search += " page #{opts[:page]}" if opts[:page]
+      max = opts[:max] ? ";max=#{opts[:max]}" : ''
+      "#{max}?search=#{CGI.escape(search)}"
     end
 
     def current_datacenter

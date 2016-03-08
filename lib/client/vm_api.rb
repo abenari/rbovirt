@@ -6,7 +6,11 @@ module OVIRT
     end
 
     def vms(opts={})
-      headers = {:accept => "application/xml; detail=disks; detail=nics; detail=hosts"}
+      if opts[:without_details]
+        headers = {:accept => "application/xml"}
+      else
+        headers = {:accept => "application/xml; detail=disks; detail=nics; detail=hosts"}
+      end
       path = "/vms"
       path += search_url(opts) unless filtered_api
       http_get(path, headers).xpath('/vms/vm').collect do |vm|
