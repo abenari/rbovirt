@@ -76,18 +76,23 @@ module OVIRT
           end
           # os element must not be sent when template is present (RHBZ 1104235)
           if opts[:template].nil? || opts[:template].empty?
-            os({:type => opts[:os_type] || 'unassigned' }){
-              if(opts[:first_boot_dev] && opts[:first_boot_dev] == 'network')
-                boot(:dev=> opts[:boot_dev1] || 'network')
-                boot(:dev=> opts[:boot_dev2] || 'hd')
-              else
-                boot(:dev=> opts[:boot_dev2] || 'hd')
-                boot(:dev=> opts[:boot_dev1] || 'network')
+            os_opts = (opts[:os].dup || {})
+            os_opts[:type] ||= opts[:os_type] || 'unassigned'
+            os_opts[:boot] ||= [opts.fetch(:boot_dev1, 'network'), opts.fetch(:boot_dev2, 'hd')]
+            os_opts[:kernel] ||= opts[:os_kernel]
+            os_opts[:initrd] ||= opts[:os_initrd]
+            os_opts[:cmdline] ||= opts[:os_cmdline]
+            if opts[:first_boot_dev]
+              os_opts[:boot] = os_opts[:boot].sort_by.with_index do |device, index|
+                device == opts[:first_boot_dev] ? -1 : index
               end
-              kernel (opts[:os_kernel])
-              initrd (opts[:os_initrd])
-              cmdline (opts[:os_cmdline])
-            }
+            end
+            os(:type => os_opts[:type]) do
+              os_opts[:boot].each { |device| boot(:dev => device) }
+              kernel os_opts[:kernel]
+              initrd os_opts[:initrd]
+              cmdline os_opts[:cmdline]
+            end
           end
           display_{
             type_(opts[:display][:type])
