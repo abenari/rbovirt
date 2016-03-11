@@ -51,6 +51,8 @@ shared_examples_for "Basic VM Life cycle" do
   end
 
   it "test_should_set_vm_ticket" do
+    while @client.vm(@vm.id).status.strip != 'down' do
+    end
     @client.vm_action(@vm.id, :start)
     while !@client.vm(@vm.id).running? do
     end
@@ -155,6 +157,16 @@ describe "VM API support functions" do
 
   before(:all) do
     setup_client
+    if @client.templates.empty?
+      name = 'vm-'+Time.now.to_i.to_s
+      @cluster = @client.clusters.select{|c| c.name == cluster_name}.first.id
+      vm = @client.create_vm(:name => name, :cluster => @cluster)
+      @client.add_volume(vm.id)
+      @client.add_interface(vm.id, :network_name => network_name)
+      while !@client.vm(vm.id).ready? do
+      end
+      @client.create_template(:vm => vm.id, :name => "template-#{name}", :description => "test_template", :comment => "test_template")
+    end
 
     @template_name = @config['template'] || @client.templates.first.name
     @template = @client.templates.find { |t| t.name == @template_name }.id
