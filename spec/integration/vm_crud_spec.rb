@@ -51,6 +51,8 @@ shared_examples_for "Basic VM Life cycle" do
   end
 
   it "test_should_set_vm_ticket" do
+    while @client.vm(@vm.id).status.strip != 'down' do
+    end
     @client.vm_action(@vm.id, :start)
     while !@client.vm(@vm.id).running? do
     end
