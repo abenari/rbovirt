@@ -42,6 +42,8 @@ shared_examples_for "Basic VM Life cycle" do
   end
 
   it "test_should_start_with_cloudinit" do
+    while @client.vm(@vm.id).status.strip != 'down' do
+    end
     hostname = "host-"+Time.now.to_i.to_s
     user_data={ :hostname => hostname }
     @client.vm_start_with_cloudinit(@vm.id, user_data)
