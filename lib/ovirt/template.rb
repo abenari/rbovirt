@@ -36,8 +36,8 @@ module OVIRT
       @profile = (xml/'type').first.text
       @cluster = Link::new(@client, (xml/'cluster').first[:id], (xml/'cluster').first[:href])
       @display = {
-        :type => (xml/'display/type').first.text rescue '',
-        :monitors => (xml/'display/monitors').first.text rescue 0
+        :type => ((xml/'display/type').first.text rescue ''),
+        :monitors => ((xml/'display/monitors').first.text rescue 0)
       }
       @cores = ((xml/'cpu/topology').first[:cores].to_i * (xml/'cpu/topology').first[:sockets].to_i rescue nil)
       @storage = ((xml/'disks/disk/size').first.text rescue nil)
