@@ -119,3 +119,22 @@ describe OVIRT, "User API" do
   end
 
 end
+
+describe OVIRT, "Operating systems API" do
+
+  before(:all) do
+    setup_client
+  end
+
+  context 'basic user api and listing' do
+    it "exposes supported operating systems" do
+      oses = @client.operating_systems
+      oses.should_not be_empty
+      os = oses.first
+      os.id.should_not be_empty
+      os.name.should_not be_empty
+      os.description.should_not be_empty
+    end
+  end
+
+end
