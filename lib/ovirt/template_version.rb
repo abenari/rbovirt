@@ -8,7 +8,7 @@ module OVIRT
     def parse_xml_attributes(xml)
       @base_template = (xml/"base_template").first[:id]
       @version_number = (xml/"version_number").first.text
-      @version_name = (xml/"version_name").first.text
+      @version_name = ((xml/"version_name").first.text rescue nil)
     end
   end
 end
