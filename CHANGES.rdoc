@@ -10,7 +10,23 @@ previous releases aren't described here.
 
 New features:
 
-* Added +description+ attribute to VMs.
+* Support operating systems
+* Added missing brackets for template display
+* Support for using the persistent-auth
+* Add instance types support.
+* Fixes Blank template display
+* Added support for VMS search options max/pages
+* Handle template's disk
+* Fix cloud init for OVirt >= 3.5
+* Set storage domain for template when provided.
+* Include disks in VM XML.
+* Make comment of vm or template editable
+* Adding override_iptables parameter to reinstall_host
+* Implement stricter checks of nicsdef content
+* Implement cloud-init for multiple nics
+* Fix broken OVIRT::Template#volumes
+* Fix for cloudinit so nokogiri correctly processes the files section
+* Add option to set description on VM create.
 
 == 0.1.0 / 2015-05-07
 
