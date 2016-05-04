@@ -142,7 +142,7 @@ module OVIRT
     def http_delete(suburl, body=nil, headers={})
       begin
         headers = body ? http_headers(headers) :
-          {:accept => 'application/xml'}.merge(auth_header).merge(filter_header)
+          {:accept => 'application/xml', :version => '3'}.merge(auth_header).merge(filter_header)
         handle_success(rest_client(suburl).delete_with_payload(body, headers))
       rescue
         handle_fault $!
@@ -192,6 +192,7 @@ module OVIRT
       filter_header.merge(auth_header).merge({
         :content_type => 'application/xml',
         :accept => 'application/xml',
+        :version => '3',
       }).merge(headers)
     end
 
