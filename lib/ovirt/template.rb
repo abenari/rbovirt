@@ -37,7 +37,9 @@ module OVIRT
       @status = ((xml/'status').first.text rescue 'unknown')
       @memory = (xml/'memory').first.text
       @profile = (xml/'type').first.text
-      @cluster = Link::new(@client, (xml/'cluster').first[:id], (xml/'cluster').first[:href])
+      if (xml/'cluster').first
+        @cluster = Link::new(@client, (xml/'cluster').first[:id], (xml/'cluster').first[:href])
+      end
       @display = {
         :type => ((xml/'display/type').first.text rescue ''),
         :monitors => ((xml/'display/monitors').first.text rescue 0)
