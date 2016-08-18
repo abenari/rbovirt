@@ -260,15 +260,15 @@ module OVIRT
                     }
                   end
                   dns { 
-                    unless dns.nil? 
-                      servers {
-                        dns.each do |dnsentry|
-                          host {  address dnsentry }
-                        end
-                      }
+                    if dns.is_a?(String)
+                      servers { host { address dns }}
+                    elsif dns.is_a?(Array) && dns.all? {|n| n.is_a?(String) }
+                      servers { host { address dns.join(' ') }}
                     end
-                    unless domain.nil? 
+                    if domain.is_a?(String)
                       search_domains { host {  address domain }}
+                    elsif domain.is_a?(Array) && domain.all? {|n| n.is_a?(String) }
+                      search_domains { host { address domain.join(' ')}}
                     end
                   }
                 }
