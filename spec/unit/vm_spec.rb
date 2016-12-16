@@ -107,6 +107,68 @@ describe OVIRT::VM do
 </vm>
 END_HEREDOC
 
+      @min_instance_type_xml = <<END_HEREDOC
+<vm id="76d29095-bc27-4cd0-8178-07e942aea549" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549">
+<name>c-1326980484</name>
+<actions>
+<link rel="shutdown" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/shutdown"/>
+<link rel="start" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/start"/>
+<link rel="stop" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/stop"/>
+<link rel="suspend" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/suspend"/>
+<link rel="detach" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/detach"/>
+<link rel="export" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/export"/>
+<link rel="move" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/move"/>
+<link rel="ticket" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/ticket"/>
+<link rel="migrate" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/migrate"/>
+<link rel="cancelmigration" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/cancelmigration"/>
+</actions>
+<link rel="disks" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/disks"/>
+<link rel="nics" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/nics"/>
+<link rel="cdroms" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/cdroms"/>
+<link rel="snapshots" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/snapshots"/>
+<link rel="tags" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/tags"/>
+<link rel="permissions" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/permissions"/>
+<link rel="statistics" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549/statistics"/>
+<type>server</type>
+<status>
+<state>up</state>
+</status>
+<memory>536870912</memory>
+<cpu>
+<topology cores="1" sockets="1"/>
+</cpu>
+<os type="unassigned">
+<boot dev="network"/>
+<boot dev="hd"/>
+</os>
+<high_availability>
+<enabled>false</enabled>
+<priority>0</priority>
+</high_availability>
+<display>
+<type>vnc</type>
+<monitors>1</monitors>
+</display>
+<cluster id="b68980dc-3ab8-11e1-bcbf-5254005f0f6f" href="/api/clusters/b68980dc-3ab8-11e1-bcbf-5254005f0f6f"/>
+<template id="00000000-0000-0000-0000-000000000000" href="/api/templates/00000000-0000-0000-0000-000000000000"/>
+<instance_type id="00000000-0000-0000-0000-000000000001" href="/api/instancetypes/00000000-0000-0000-0000-000000000001"/>
+<start_time>2012-01-19T14:41:58.428Z</start_time>
+<creation_time>2012-01-19T13:41:24.405Z</creation_time>
+<origin>rhev</origin>
+<stateless>false</stateless>
+<placement_policy>
+<affinity>migratable</affinity>
+</placement_policy>
+<memory_policy>
+<guaranteed>536870912</guaranteed>
+</memory_policy>
+<usb>
+<enabled>true</enabled>
+</usb>
+</vm>
+END_HEREDOC
+
+
       @min_xml = <<END_HEREDOC
 <vm id="76d29095-bc27-4cd0-8178-07e942aea549" href="/api/vms/76d29095-bc27-4cd0-8178-07e942aea549">
 <name>c-1326980484</name>
@@ -276,6 +338,24 @@ END_HEREDOC
       Nokogiri::XML(xml).xpath("//disks/disk/storage_domains/storage_domain[contains(@id,'#{storagedomain}')]").length.should eql(1)
     end
 
+    it "create vm xml without instance_type" do
+      opts = {:cluster_name=>'cluster'}
+      xml = OVIRT::VM.to_xml(opts)
+      xml.nil?.should eql(false)
+      Nokogiri::XML(xml).xpath("//instance_type").length.should eql(0)
+    end
+
+    it "create vm xml with instance_type" do
+      instance_type = "00000000-0000-0000-0000-000000000001"
+      opts = {:cluster_name => 'cluster', :instance_type => instance_type}
+      xml = OVIRT::VM.to_xml(opts)
+      puts xml
+      xml.nil?.should eql(false)
+      Nokogiri::XML(xml).xpath("//instance_type").length.should eql(1)
+      Nokogiri::XML(xml).xpath("//instance_type[contains(@id,'#{instance_type}')]").length.should eql(1)
+    end
+
+
     it "should be running" do
       vm = OVIRT::VM.new(nil, Nokogiri::XML(@xml).xpath('/').first)
       vm.running?.should eql(true)
@@ -301,6 +381,11 @@ END_HEREDOC
       disk.storage_domain.should eql('11111111-1111-1111-1111-111111111111')
       disk.size.should eql('53687091200')
       disk.interface.should eql('virtio')
+    end
+
+    it "should have instance_type" do
+      vm = OVIRT::VM.new(nil, Nokogiri::XML(@min_instance_type_xml).xpath('/').first)
+      vm.instance_type.id.should eql('00000000-0000-0000-0000-000000000001')
     end
 
     it "should still fallback to the client" do

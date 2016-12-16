@@ -4,7 +4,7 @@ module OVIRT
     FILEINJECT_PATH = "user-data.txt"
 
   class VM < BaseObject
-    attr_reader :description, :status, :memory, :profile, :display, :host, :cluster, :template
+    attr_reader :description, :status, :memory, :profile, :display, :host, :cluster, :template, :instance_type
     attr_reader :storage, :cores, :creation_time, :os, :ha, :ha_priority, :ips, :vnc, :quota, :clone
     attr_accessor :comment, :interfaces, :volumes
 
@@ -60,6 +60,9 @@ module OVIRT
             template_{ name_(opts[:template_name])}
           else
             template_{name_('Blank')}
+          end
+          if opts[:instance_type] && !opts[:instance_type].empty?
+            instance_type( :id => opts[:instance_type])
           end
           if opts[:quota]
             quota_( :id => opts[:quota])
@@ -308,6 +311,7 @@ module OVIRT
       @memory = (xml/'memory').first.text
       @profile = (xml/'type').first.text
       @template = Link::new(@client, (xml/'template').first[:id], (xml/'template').first[:href])
+      @instance_type = Link::new(@client, (xml/'instance_type').first[:id], (xml/'instance_type').first[:href]) rescue nil
       @host = Link::new(@client, (xml/'host').first[:id], (xml/'host').first[:href]) rescue nil
       @cluster = Link::new(@client, (xml/'cluster').first[:id], (xml/'cluster').first[:href])
       @display = {

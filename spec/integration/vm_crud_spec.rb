@@ -119,6 +119,30 @@ shared_examples_for "VM Life cycle without template" do
   end
 end
 
+describe "Basic VM creation with instance type" do
+  before(:all) do
+    setup_client
+    @name = 'vm-'+Time.now.to_i.to_s
+    @cluster = @client.clusters.select{|c| c.name == cluster_name}.first.id
+    if @config['instance_type']
+      @instance_type = @client.instance_type(@config['instance_type'])
+    else
+      @instance_type = @client.instance_types.first
+    end
+  end
+
+  it "test_should_create_vm_with_instance_type" do
+    if @instance_type
+      @vm = @client.create_vm(:name => @name, :instance_type => @instance_type.id, :cluster => @cluster)
+      @vm.should_not be_nil
+      while !@client.vm(@vm.id).ready? do
+      end
+      @client.destroy_vm(@vm.id) if @vm
+    else
+      skip "No instance type found, skip VM creation based on instance type"
+    end
+  end
+end
 
 describe "Admin API VM Life cycle" do
 
