@@ -172,7 +172,7 @@ module OVIRT
         options[:ssl_cert_store] = ca_cert_store if ca_cert_store
         options[:ssl_ca_file] = ca_cert_file if ca_cert_file
       end
-      options[:timeout] = ENV['RBOVIRT_REST_TIMEOUT'] if ENV['RBOVIRT_REST_TIMEOUT']
+      options[:timeout] = ENV['RBOVIRT_REST_TIMEOUT'].to_i if ENV['RBOVIRT_REST_TIMEOUT']
       RestClient::Resource.new(@api_entrypoint, options)[suburl]
     end
 
