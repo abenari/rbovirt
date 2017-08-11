@@ -174,8 +174,9 @@ module OVIRT
       unless runcmd.nil?
         runcmd.each do |cmd|
           cmdlist = \
-	  "#{cmdlist}\n" \
-          "- #{cmd}\n"
+          "#{cmdlist}\n" \
+          "- |\n"\
+          "  #{cmd.lines.join("  ")}\n"
         end
         if extracmd.nil?
           extracmd = cmdlist
