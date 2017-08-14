@@ -162,15 +162,15 @@ module OVIRT
       runcmd              = opts[:runcmd]
       cluster_major, cluster_minor = opts[:cluster_version]
       api_major,api_minor, api_build, api_revision = opts[:api_version]
-      extracmd            = nil 
+      extracmd            = opts[:custom_script]
       unless opts[:phone_home].nil?
         phone_home = \
         "phone_home:\n" \
         "  url: #{opts[:phone_home]['url']}\n" \
         "  post: #{opts[:phone_home]['post']}\n"
-        extracmd   = phone_home
+        extracmd = "#{extracmd}#{phone_home}"
       end
-      cmdlist             = 'runcmd:'
+      cmdlist = 'runcmd:'
       unless runcmd.nil?
         runcmd.each do |cmd|
           cmdlist = \
@@ -178,11 +178,7 @@ module OVIRT
           "- |\n"\
           "  #{cmd.lines.join("  ")}\n"
         end
-        if extracmd.nil?
-          extracmd = cmdlist
-        else
-          extracmd = extracmd +cmdlist
-        end
+        extracmd   = "#{extracmd}#{cmdlist}"
       end
       builder   = Nokogiri::XML::Builder.new do
         action {
@@ -205,12 +201,7 @@ module OVIRT
           end
           vm {
             initialization {
-              unless runcmd.nil?
-                custom_script cmdlist
-              end
-              unless phone_home.nil?
-                custom_script phone_home
-              end
+              custom_script extracmd if extracmd
               cloud_init {
                 unless hostname.nil?
                   host { address hostname  }
