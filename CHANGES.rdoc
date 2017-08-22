@@ -6,6 +6,37 @@ _rbovirt_ project.
 Note that this list of changes was added with the 0.0.30 release,
 previous releases aren't described here.
 
+== 0.1.4
+
+New features:
+
+* Support passing custom script to start_with_cloudinit
+
+Bug fixes:
+
+* Support for multi-line runcmd params
+* RBOVIRT_REST_TIMEOUT parse as integer
+* Pin rack to 1.x
+* Blank template does not contain a <cluster> element
+
+== 0.1.3
+
+New features:
+
+* Add instance_type support for VM
+* Add mtu vlan_id and usages to networks
+* Name servers and search domains should be space separated strings
+
+Bug fixes:
+
+* Name servers and search domains should be passed as space separated strings
+
+== 0.1.2
+
+Bug fixes:
+
+* Explicitly use version 3 of the API
+
 == 0.1.1
 
 New features:
