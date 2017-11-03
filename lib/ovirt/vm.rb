@@ -113,6 +113,8 @@ module OVIRT
               opts[:disks].each do |d|
                 disk(:id => d[:id]) {
                   storage_domains { storage_domain(:id => d[:storagedomain]) }
+                  format_(d[:format]) if d[:format]
+                  sparse_(d[:sparse]) if d[:sparse]
                 }
               end
             end
