@@ -6,6 +6,12 @@ _rbovirt_ project.
 Note that this list of changes was added with the 0.0.30 release,
 previous releases aren't described here.
 
+== 0.1.5
+
+New features:
+
+* Adding disk format when cloning a disk from template
+
 == 0.1.4
 
 New features:
