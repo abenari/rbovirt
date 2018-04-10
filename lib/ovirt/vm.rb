@@ -76,9 +76,9 @@ module OVIRT
           if opts[:memory]
               memory opts[:memory]
           end
-          if opts[:cores]
+          if opts[:cores] || opts[:sockets]
              cpu {
-               topology( :cores => (opts[:cores] || '1'), :sockets => '1' )
+               topology( :cores => (opts[:cores] || '1'), :sockets => (opts[:sockets] || '1') )
              }
           end
           # os element must not be sent when template is present (RHBZ 1104235)
@@ -316,7 +316,8 @@ module OVIRT
         :subject => ((xml/'display/certificate/subject').first.text rescue nil),
         :monitors => ((xml/'display/monitors').first.text rescue 0)
       }
-      @cores = ((xml/'cpu/topology').first[:cores].to_i * (xml/'cpu/topology').first[:sockets].to_i rescue nil)
+      @cores = (xml/'cpu/topology').first[:cores].to_i
+      @sockets = (xml/'cpu/topology').first[:sockets].to_i rescue nil
       @storage = ((xml/'disks/disk/size').first.text rescue nil)
       @creation_time = (xml/'creation_time').text
       @ips = (xml/'guest_info/ips/ip').map { |ip| ip[:address] }
