@@ -17,14 +17,14 @@ module OVIRT
         http_post("/hosts/%s/approve" % host_id, "<action></action>")
     end
 
-    def reinstall_host(host_id, override_iptables=False, opts={})
+    def reinstall_host(host_id, override_iptables=false, opts={})
         http_post("/hosts/%s/install" % host_id,
                   "<action>
                     <ssh>
                      <authentication_method>PublicKey</authentication_method>
                     </ssh>
                     <host>
-                     <override_iptables>" + override_iptables + "</override_iptables>
+                     <override_iptables>" + override_iptables.to_s + "</override_iptables>
                     </host>
                    </action>"
                  )
