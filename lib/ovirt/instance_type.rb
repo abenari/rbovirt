@@ -23,7 +23,8 @@ module OVIRT
       # Common attributes
       @description = ((xml/'description').first.text rescue '')
       @memory = (xml/'memory').first.text
-      @cores = ((xml/'cpu/topology').first[:cores].to_i * (xml/'cpu/topology').first[:sockets].to_i rescue nil)
+      @cores = (xml/'cpu/topology').first[:cores].to_i
+      @sockets = (xml/'cpu/topology').first[:sockets].to_i
       @os = {
           :type => (xml/'os').first[:type],
           :boot => (xml/'os/boot').collect {|boot| boot[:dev] }

@@ -44,7 +44,8 @@ module OVIRT
         :type => ((xml/'display/type').first.text rescue ''),
         :monitors => ((xml/'display/monitors').first.text rescue 0)
       }
-      @cores = ((xml/'cpu/topology').first[:cores].to_i * (xml/'cpu/topology').first[:sockets].to_i rescue nil)
+      @cores = (xml/'cpu/topology').first[:cores].to_i
+      @sockets = (xml/'cpu/topology').first[:sockets].to_i
       @storage = ((xml/'disks/disk/size').first.text rescue nil)
       @creation_time = (xml/'creation_time').text
       @os = {
